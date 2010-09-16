@@ -172,12 +172,15 @@ void isr_start(void) {
 
     // For each "pixel" (really 20 or so screen pixels?) go red or white
     for(x=0; x<32; x++) {
-        if(logo[y/28][x/2]) {
-            VGA_G_HIGH;
-            VGA_B_HIGH;
-        } else {
+        switch (logo[y/28][x/2]) {
+        case 0:
             VGA_G_LOW;
             VGA_B_LOW;
+            break;
+        case 1:
+            VGA_G_HIGH;
+            VGA_B_HIGH;
+            break;
         }
     }
     // black out what's left
