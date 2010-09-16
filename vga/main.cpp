@@ -139,7 +139,6 @@ void loop() {
     // Everything happens in the interrupts!
 }
 
-
 // This ISR will end horizontal sync for most of the image and
 // setup the vertical sync for higher line counts
 void isr_porch(void) {
