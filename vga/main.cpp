@@ -53,6 +53,13 @@
 #define VGA_H_HIGH (GPIOA_BASE)->BSRR = BIT(7)
 #define VGA_H_LOW  (GPIOA_BASE)->BRR  = BIT(7)
 
+// pick one of these for when isr_start gets triggered, they'll place
+// the image appropriately
+#define START_IMAGE_FLUSH_LEFT  300
+#define START_IMAGE_CENTERED    600
+// we'll center
+#define START_IMAGE START_IMAGE_CENTERED
+
 void isr_porch(void);
 void isr_start(void);
 void isr_stop(void);
@@ -113,7 +120,7 @@ void setup() {
 
     Timer4.setCompare1(200);
     Timer4.attachCompare1Interrupt(isr_porch);
-    Timer4.setCompare2(300);
+    Timer4.setCompare2(START_IMAGE);
     Timer4.attachCompare2Interrupt(isr_start);
     Timer4.setCompare3(2170);
     Timer4.attachCompare3Interrupt(isr_stop);
