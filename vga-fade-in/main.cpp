@@ -56,12 +56,31 @@
 #define B1_BIT 0
 #define B2_BIT 9
 
-// convenience macros for common color values.  BIT(n) produces an
-// integer with the nth bit set.
+// convenience macros for color values.  BIT(n) produces an integer
+// with the nth bit set.
+//
+// black
 #define C_BLACK (0)
-#define C_RED   (BIT(R0_BIT) | BIT(R1_BIT) | BIT(R2_BIT))
-#define C_GREEN (BIT(G0_BIT) | BIT(G1_BIT) | BIT(G2_BIT))
-#define C_BLUE  (BIT(B0_BIT) | BIT(B1_BIT) | BIT(B2_BIT))
+// primary colors at various strengths
+#define C_R0 (BIT(R0_BIT))
+#define C_R1 (BIT(R1_BIT))
+#define C_R2 (BIT(R2_BIT))
+#define C_G0 (BIT(G0_BIT))
+#define C_G1 (BIT(G1_BIT))
+#define C_G2 (BIT(G2_BIT))
+#define C_B0 (BIT(B0_BIT))
+#define C_B1 (BIT(B1_BIT))
+#define C_B2 (BIT(B2_BIT))
+// primary colors
+#define C_RED   (C_R0 | C_R1 | C_R2)
+#define C_GREEN (C_G0 | C_G1 | C_G2)
+#define C_BLUE  (C_B0 | C_B1 | C_B2)
+// secondary colors
+#define C_MAGENTA (C_R2 | C_B2)
+#define C_CYAN    (C_G2 | C_B2)
+#define C_YELLOW  (C_G2 | C_R2)
+
+// white
 #define C_WHITE (C_RED | C_GREEN | C_BLUE)
 
 // given an color (which is an OR of BIT applied to the [RGB][012]_BIT
@@ -129,9 +148,27 @@ uint32 frame[FRAME_HEIGHT][FRAME_WIDTH];
 uint32 *frame_row;    // cache our current row at hsync time, for speed
 
 // convenience
-uint8 *color_pins = {R0_PIN, R1_PIN, R2_PIN,
-                     G0_PIN, G1_PIN, G2_PIN,
-                     B0_PIN, B1_PIN, B2_PIN};
+uint8 color_pins[] = {R0_PIN, R1_PIN, R2_PIN,
+                      G0_PIN, G1_PIN, G2_PIN,
+                      B0_PIN, B1_PIN, B2_PIN};
+
+// 12-color color wheel
+#define N_COLOR_WHEEL_COLORS 12
+uint32 bsrr_color_wheel[] = \
+    {COLOR_TO_BSRR(C_RED),
+     COLOR_TO_BSRR(C_R2 | C_R1 | C_B0), // rose
+     COLOR_TO_BSRR(C_MAGENTA),
+     COLOR_TO_BSRR(C_R0 | C_B1 | C_B2), // violet
+     COLOR_TO_BSRR(C_BLUE),
+     COLOR_TO_BSRR(C_B2 | C_B1 | C_G0), // azure
+     COLOR_TO_BSRR(C_CYAN),
+     COLOR_TO_BSRR(C_B0 | C_G1 | C_G2), // spring green
+     COLOR_TO_BSRR(C_GREEN),
+     COLOR_TO_BSRR(C_G2 | C_G1 | C_R0), // chartreuse green
+     COLOR_TO_BSRR(C_YELLOW),
+     COLOR_TO_BSRR(C_R2 | C_R1 | C_G0) // orange
+    };
+int current_color = 0;          // start red
 
 // These interrupt service routines control hsync, vsync, and sending
 // the visible part of each scan line to the monitor.
@@ -204,7 +241,7 @@ void loop() {
 // This ISR will end horizontal sync for most of the image and
 // setup the vertical sync for higher line counts
 void isr_porch(void) {
-    VGA_H_HIGH;
+    VGA_HS_HIGH;
     y++;
     frame_row = frame[y / (480/FRAME_HEIGHT)];
     // Back to the top
@@ -223,11 +260,11 @@ void isr_porch(void) {
 
     // Other vsync stuff below the image
     if(y >= 492) {
-        VGA_V_HIGH;
+        VGA_VS_HIGH;
         return;
     }
     if(y >= 490) {
-        VGA_V_LOW;
+        VGA_VS_LOW;
         return;
     }
     if(y == 479) {
@@ -258,12 +295,12 @@ void isr_start(void) {
     volatile_int++;
 
     // black out what's left, or vsync won't work
-    VGA_BLACK;
+    VGA_SET_BSRR(C_BLACK);
 }
 
 // Start horizonal sync
 void isr_update(void) {
-    VGA_H_LOW;
+    VGA_HS_LOW;
 }
 
 //------------------------------- frame update --------------------------------
