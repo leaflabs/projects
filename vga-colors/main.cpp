@@ -92,6 +92,24 @@
      BIT(G0_BIT+16) | BIT(G1_BIT+16) | BIT(G2_BIT+16) |                 \
      BIT(B0_BIT+16) | BIT(B1_BIT+16) | BIT(B2_BIT+16))
 
+// convenience macros for BSRR color values.
+#define BSRR_BLACK   COLOR_TO_BSRR(C_BLACK)
+#define BSRR_R0      COLOR_TO_BSRR(C_R0)
+#define BSRR_R1      COLOR_TO_BSRR(C_R1)
+#define BSRR_R2      COLOR_TO_BSRR(C_R2)
+#define BSRR_G0      COLOR_TO_BSRR(C_G0)
+#define BSRR_G1      COLOR_TO_BSRR(C_G1)
+#define BSRR_G2      COLOR_TO_BSRR(C_G2)
+#define BSRR_B0      COLOR_TO_BSRR(C_B0)
+#define BSRR_B1      COLOR_TO_BSRR(C_B1)
+#define BSRR_B2      COLOR_TO_BSRR(C_B2)
+#define BSRR_RED     COLOR_TO_BSRR(C_RED)
+#define BSRR_GREEN   COLOR_TO_BSRR(C_GREEN)
+#define BSRR_BLUE    COLOR_TO_BSRR(C_BLUE)
+#define BSRR_MAGENTA COLOR_TO_BSRR(C_MAGENTA)
+#define BSRR_CYAN    COLOR_TO_BSRR(C_CYAN)
+#define BSRR_YELLOW  COLOR_TO_BSRR(C_YELLOW)
+
 // Assumes the argument is an appropriate value for sending to the
 // BSRR.  see COLOR_TO_BSRR for a convenient way to get such a value.
 #define VGA_SET_BSRR(bsrr) (*BBSRR = (bsrr))
@@ -118,7 +136,7 @@
 // We take 2287 cycles to draw a full horizontal line (based on a 72
 // MHz clock).  This is the cycle when we start drawing the visible
 // part of the screen.
-#define START_IMAGE 400
+#define START_IMAGE 300
 
 // # bits of color
 #define N_COLOR_BITS 9
@@ -127,8 +145,9 @@
 // we don't/can't support full resolution -- at 640 x 480, 9-bit color
 // would require ~340KB RAM, and we only have 20KB total, of which
 // 17KB is currently usable by a sketch.
-#define FRAME_WIDTH 54
-#define FRAME_HEIGHT 48        // you want this to be a divisor of 480
+#define FRAME_WIDTH 25
+#define FRAME_HEIGHT 24        // you want this to be a divisor of 480
+#define FRAME_N_PIXELS (FRAME_WIDTH * FRAME_HEIGHT)
 
 // this is (hackishly) used to force delays
 volatile uint8 volatile_int = 0;
@@ -152,29 +171,37 @@ uint8 color_pins[] = {R0_PIN, R1_PIN, R2_PIN,
                       G0_PIN, G1_PIN, G2_PIN,
                       B0_PIN, B1_PIN, B2_PIN};
 
+/* Color wheel state */
+
 // 12-color color wheel
 #define N_COLOR_WHEEL_COLORS 12
 uint32 bsrr_color_wheel[] = \
-    {COLOR_TO_BSRR(C_RED),
+    {BSRR_RED,
      COLOR_TO_BSRR(C_R2 | C_R1 | C_B0), // rose
-     COLOR_TO_BSRR(C_MAGENTA),
+     BSRR_MAGENTA,
      COLOR_TO_BSRR(C_R0 | C_B1 | C_B2), // violet
-     COLOR_TO_BSRR(C_BLUE),
+     BSRR_BLUE,
      COLOR_TO_BSRR(C_B2 | C_B1 | C_G0), // azure
-     COLOR_TO_BSRR(C_CYAN),
+     BSRR_CYAN,
      COLOR_TO_BSRR(C_B0 | C_G1 | C_G2), // spring green
-     COLOR_TO_BSRR(C_GREEN),
+     BSRR_GREEN,
      COLOR_TO_BSRR(C_G2 | C_G1 | C_R0), // chartreuse green
-     COLOR_TO_BSRR(C_YELLOW),
+     BSRR_YELLOW,
      COLOR_TO_BSRR(C_R2 | C_R1 | C_G0) // orange
     };
-int current_color = 0;          // start red
+uint8 current_color = 0;          // start red
+uint8 color_count = 0;
+#define COLOR_OVERFLOW 10
+
+// number of pixels to update per scan line -- note that bad things
+// happen if FRAME_N_PIXELS isn't a multiple of 10
+#define CHUNK_SIZE 20
 
 // These interrupt service routines control hsync, vsync, and sending
 // the visible part of each scan line to the monitor.
 void isr_porch(void);
-void isr_start(void);
-void isr_update(void);
+void isr_draw_line(void);
+void isr_start_hsync(void);
 
 // This function is called during scan lines 480--489; these lines
 // aren't visible in the display, and so it's a good time to compute
@@ -224,16 +251,16 @@ void setup() {
     Timer4.setCompare1(200);
     Timer4.attachCompare1Interrupt(isr_porch);
     Timer4.setCompare2(START_IMAGE);
-    Timer4.attachCompare2Interrupt(isr_start);
+    Timer4.attachCompare2Interrupt(isr_draw_line);
     Timer4.setCompare3(1);      // Could be zero I guess
-    Timer4.attachCompare3Interrupt(isr_update);
+    Timer4.attachCompare3Interrupt(isr_start_hsync);
 
     Timer4.setCount(0);         // Ready...
     Timer4.resume();            // Go!
 }
 
 void loop() {
-    // Empty.  Everything happens in the interrupts!
+    // Everything happens in the interrupts!
 }
 
 //--------------------------------- VGA ISRs ----------------------------------
@@ -281,52 +308,83 @@ void isr_porch(void) {
 }
 
 // This is the main horizontal sweep
-void isr_start(void) {
+void isr_draw_line(void) {
     // Skip if we're not in the image at all
     if(!v_active) { return; }
 
     // main loop: draw the contents of the frame as fast as we can.
     // use VGA_BIT so per-iteration time is deterministic.
     for(x = 0; x < FRAME_WIDTH; x++) {
-        VGA_SET_BSRR(frame_row[x]);
+        // VGA_SET_BSRR(frame_row[x]);
+        VGA_SET_BSRR(BSRR_RED);
     }
 
     // delay a bit so the last pixel in the row doesn't look so narrow
     volatile_int++;
 
     // black out what's left, or vsync won't work
-    VGA_SET_BSRR(C_BLACK);
+    VGA_SET_BSRR(BSRR_BLACK);
 }
 
 // Start horizonal sync
-void isr_update(void) {
+void isr_start_hsync(void) {
     VGA_HS_LOW;
 }
 
 //------------------------------- frame update --------------------------------
 
-void update_frame(void) {       // TODO
-    // right now, we've got lines 480--489 to do our thinking.
+void update_frame_chunk(int chunk) {
+    int start = chunk * CHUNK_SIZE;
+    int end = start + CHUNK_SIZE;
+    if (end > FRAME_N_PIXELS) end = FRAME_N_PIXELS;
+    uint32* flat_frame = (uint32*)frame;
+    for (int i = start; i < end; i++) {
+        flat_frame[i] = bsrr_color_wheel[current_color];
+    }
+}
+
+void update_frame(void) {
+    return;
+    // right now, we've got lines 480--489 to do our thinking.  we can
+    // have more if we want; see the comment in isr_porch.
     switch (y) {
     case 480:
+        // put this here so we only do it once per frame
+        if (++color_count < COLOR_OVERFLOW) {
+            return;
+        } else {
+            color_count = 0;
+            if (++current_color >= N_COLOR_WHEEL_COLORS)
+                current_color = 0;
+            update_frame_chunk(0);
+        }
         break;
     case 481:
+        if (color_count == 0) update_frame_chunk(1);
         break;
     case 482:
+        if (color_count == 0) update_frame_chunk(2);
         break;
     case 483:
+        if (color_count == 0) update_frame_chunk(3);
         break;
     case 484:
+        if (color_count == 0) update_frame_chunk(4);
         break;
     case 485:
+        if (color_count == 0) update_frame_chunk(5);
         break;
     case 486:
+        if (color_count == 0) update_frame_chunk(6);
         break;
     case 487:
+        if (color_count == 0) update_frame_chunk(7);
         break;
     case 488:
+        if (color_count == 0) update_frame_chunk(8);
         break;
     case 489:
+        if (color_count == 0) update_frame_chunk(9);
         break;
     default:
         ASSERT(0);
