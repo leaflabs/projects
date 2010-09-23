@@ -5,6 +5,7 @@
  *
  * This code is released into the public domain.
  */
+#include "string.h"
 
 #include "wirish.h"
 
@@ -81,6 +82,8 @@
 #define C_YELLOW  (C_G2 | C_R2)
 // white
 #define C_WHITE (C_RED | C_GREEN | C_BLUE)
+// pale grey for the border
+#define C_PALE_GRAY (C_R0 | C_G0 | C_B0)
 
 // given an color (which is an OR of BIT applied to the [RGB][012]_BIT
 // macros, above), convert it into a 32-bit integer which, if written
@@ -92,23 +95,24 @@
      BIT(B0_BIT+16) | BIT(B1_BIT+16) | BIT(B2_BIT+16))
 
 // convenience macros for BSRR color values.
-#define BSRR_BLACK   COLOR_TO_BSRR(C_BLACK)
-#define BSRR_R0      COLOR_TO_BSRR(C_R0)
-#define BSRR_R1      COLOR_TO_BSRR(C_R1)
-#define BSRR_R2      COLOR_TO_BSRR(C_R2)
-#define BSRR_G0      COLOR_TO_BSRR(C_G0)
-#define BSRR_G1      COLOR_TO_BSRR(C_G1)
-#define BSRR_G2      COLOR_TO_BSRR(C_G2)
-#define BSRR_B0      COLOR_TO_BSRR(C_B0)
-#define BSRR_B1      COLOR_TO_BSRR(C_B1)
-#define BSRR_B2      COLOR_TO_BSRR(C_B2)
-#define BSRR_RED     COLOR_TO_BSRR(C_RED)
-#define BSRR_GREEN   COLOR_TO_BSRR(C_GREEN)
-#define BSRR_BLUE    COLOR_TO_BSRR(C_BLUE)
-#define BSRR_MAGENTA COLOR_TO_BSRR(C_MAGENTA)
-#define BSRR_CYAN    COLOR_TO_BSRR(C_CYAN)
-#define BSRR_YELLOW  COLOR_TO_BSRR(C_YELLOW)
-#define BSRR_WHITE   COLOR_TO_BSRR(C_WHITE)
+#define BSRR_BLACK     COLOR_TO_BSRR(C_BLACK)
+#define BSRR_R0        COLOR_TO_BSRR(C_R0)
+#define BSRR_R1        COLOR_TO_BSRR(C_R1)
+#define BSRR_R2        COLOR_TO_BSRR(C_R2)
+#define BSRR_G0        COLOR_TO_BSRR(C_G0)
+#define BSRR_G1        COLOR_TO_BSRR(C_G1)
+#define BSRR_G2        COLOR_TO_BSRR(C_G2)
+#define BSRR_B0        COLOR_TO_BSRR(C_B0)
+#define BSRR_B1        COLOR_TO_BSRR(C_B1)
+#define BSRR_B2        COLOR_TO_BSRR(C_B2)
+#define BSRR_RED       COLOR_TO_BSRR(C_RED)
+#define BSRR_GREEN     COLOR_TO_BSRR(C_GREEN)
+#define BSRR_BLUE      COLOR_TO_BSRR(C_BLUE)
+#define BSRR_MAGENTA   COLOR_TO_BSRR(C_MAGENTA)
+#define BSRR_CYAN      COLOR_TO_BSRR(C_CYAN)
+#define BSRR_YELLOW    COLOR_TO_BSRR(C_YELLOW)
+#define BSRR_WHITE     COLOR_TO_BSRR(C_WHITE)
+#define BSRR_PALE_GRAY COLOR_TO_BSRR(C_PALE_GRAY)
 
 // Assumes the argument is an appropriate value for sending to the
 // BSRR.  see COLOR_TO_BSRR for a convenient way to get such a value.
@@ -171,11 +175,13 @@ uint8 color_pins[] = {R0_PIN, R1_PIN, R2_PIN,
                       G0_PIN, G1_PIN, G2_PIN,
                       B0_PIN, B1_PIN, B2_PIN};
 
-/* Color wheel state */
+/* 12-color wheel */
 
-// 12-color color wheel
 #define N_COLOR_WHEEL_COLORS 12
-uint32 bsrr_color_wheel[] = \
+// the "__attribute__((section (".USER_FLASH")))" ensures that this
+// variable will be stored in read-only memory, so it won't take up
+// RAM.
+uint32 bsrr_color_wheel[] =                     \
     {BSRR_RED,
      COLOR_TO_BSRR(C_R2 | C_R1 | C_B0), // rose
      BSRR_MAGENTA,
@@ -191,11 +197,34 @@ uint32 bsrr_color_wheel[] = \
     };
 int current_color_idx = 0;          // start red
 uint32 current_color = 0;
-int color_count = 0;
-#define COLOR_OVERFLOW 20
+
+/* Mondrian images:
+ *
+ * Each of these files contains a uint32[] image suitable for copying
+ * into the framebuffer.  These images have the same name as the
+ * included file, minus the '.c', and have __attribute__ set so
+ * they're stored in flash (otherwise we'd run out of RAM).
+ */
+
+#include "tableau_2.c"
+#include "comp_ybr.c"
+#include "comp_ii.c"
+
+#define N_STATIC_IMAGES 3
+uint32* static_images[N_STATIC_IMAGES] = \
+    {tableau_2,
+     comp_ybr,
+     comp_ii};
+int static_images_idx = 0;
+
+/* Frame update stuff */
 
 // number of framebuffer pixels to update per scan line in update_frame()
 #define CHUNK_SIZE 70
+// How many frames go by before we redisplay
+#define FRAME_OVERFLOW 360
+// Number of frames since last framebuffer update; from 0 to FRAME_OVERFLOW-1.
+int frame_count = 0;
 
 // These interrupt service routines control hsync, vsync, and sending
 // the visible part of each scan line to the monitor.
@@ -323,11 +352,11 @@ void isr_draw_line(void) {
     // Skip if we're not in the image at all
     if(!v_active) { return; }
 
-    // draw a white border.  for loop setup makes this appear as a band.
-    VGA_SET_BSRR(BSRR_WHITE);
+    // draw a very pale gray border
+    VGA_SET_BSRR(BSRR_PALE_GRAY);
 
     if (5 < y && y < 475) {
-        // delay here as it's the likely branch
+        // delay here for weird voodoo reasons that make us flush left
         volatile_int++;
         volatile_int++;
         volatile_int++;
@@ -339,22 +368,31 @@ void isr_draw_line(void) {
             VGA_SET_BSRR(frame_row[x]);
         }
     } else {
-        for(x = 0; x < FRAME_WIDTH; x++) {
-            VGA_SET_BSRR(BSRR_WHITE);
+        // kludge together a top border -- this goes faster since it
+        // doesn't have to load a value from frame_row, so we don't do
+        // it as many times
+        for(x = 0; x < FRAME_WIDTH - 7; x++) {
+            VGA_SET_BSRR(BSRR_PALE_GRAY);
         }
     }
 
     // delay a bit so the last pixel in the row doesn't look so narrow
     volatile_int++;
+    // add another pale gray border
+    VGA_SET_BSRR(BSRR_PALE_GRAY);
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
 
-    // then draw another white border
-    VGA_SET_BSRR(BSRR_WHITE);
-    volatile_int++;
-    volatile_int++;
-    volatile_int++;
-    volatile_int++;
-
-    // and black out the rest
+    // then make the rest black
     VGA_SET_BSRR(BSRR_BLACK);
 }
 
@@ -368,12 +406,14 @@ void isr_front_porch(void) {
 void update_frame_chunk(int chunk) {
     int start = chunk * CHUNK_SIZE;
     int end = start + CHUNK_SIZE;
-    uint32* flat_frame = (uint32*)frame;
 
     if (end > FRAME_N_PIXELS) end = FRAME_N_PIXELS;
 
+    uint32* flat_frame = (uint32*)frame;
+    uint32* static_frame = static_images[static_images_idx];
+
     for (int i = start; i < end; i++) {
-        flat_frame[i] = current_color;
+        flat_frame[i] = static_frame[i];
     }
 }
 
@@ -383,19 +423,18 @@ void update_frame(void) {
     switch (y) {
     case 480:
         // put this here so we only do it once per frame
-        if (++color_count < COLOR_OVERFLOW) {
+        if (++frame_count < FRAME_OVERFLOW) {
             return;
         } else {
-            color_count = 0;
+            frame_count = 0;
             chunk = 0;
-            if (++current_color_idx >= N_COLOR_WHEEL_COLORS)
-                current_color_idx = 0;
-            current_color = bsrr_color_wheel[current_color_idx];
+            if (++static_images_idx == N_STATIC_IMAGES)
+                static_images_idx = 0;
             update_frame_chunk(chunk++);
         }
         break;
     default:
-        if (color_count == 0) update_frame_chunk(chunk++);
+        if (frame_count == 0) update_frame_chunk(chunk++);
         break;
     }
 }
