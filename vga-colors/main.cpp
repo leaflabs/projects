@@ -79,7 +79,6 @@
 #define C_MAGENTA (C_R2 | C_B2)
 #define C_CYAN    (C_G2 | C_B2)
 #define C_YELLOW  (C_G2 | C_R2)
-
 // white
 #define C_WHITE (C_RED | C_GREEN | C_BLUE)
 
@@ -109,6 +108,7 @@
 #define BSRR_MAGENTA COLOR_TO_BSRR(C_MAGENTA)
 #define BSRR_CYAN    COLOR_TO_BSRR(C_CYAN)
 #define BSRR_YELLOW  COLOR_TO_BSRR(C_YELLOW)
+#define BSRR_WHITE   COLOR_TO_BSRR(C_WHITE)
 
 // Assumes the argument is an appropriate value for sending to the
 // BSRR.  see COLOR_TO_BSRR for a convenient way to get such a value.
@@ -145,8 +145,8 @@
 // we don't/can't support full resolution -- at 640 x 480, 9-bit color
 // would require ~340KB RAM, and we only have 20KB total, of which
 // 17KB is currently usable by a sketch.
-#define FRAME_WIDTH 25
-#define FRAME_HEIGHT 24        // you want this to be a divisor of 480
+#define FRAME_WIDTH 64
+#define FRAME_HEIGHT 48        // you want this to be a divisor of 480
 #define FRAME_N_PIXELS (FRAME_WIDTH * FRAME_HEIGHT)
 
 // this is (hackishly) used to force delays
@@ -189,13 +189,13 @@ uint32 bsrr_color_wheel[] = \
      BSRR_YELLOW,
      COLOR_TO_BSRR(C_R2 | C_R1 | C_G0) // orange
     };
-uint8 current_color = 0;          // start red
-uint8 color_count = 0;
-#define COLOR_OVERFLOW 10
+int current_color_idx = 0;          // start red
+uint32 current_color = 0;
+int color_count = 0;
+#define COLOR_OVERFLOW 20
 
-// number of pixels to update per scan line -- note that bad things
-// happen if FRAME_N_PIXELS isn't a multiple of 10
-#define CHUNK_SIZE 20
+// number of framebuffer pixels to update per scan line in update_frame()
+#define CHUNK_SIZE 70
 
 // These interrupt service routines control hsync, vsync, and sending
 // the visible part of each scan line to the monitor.
@@ -237,7 +237,7 @@ void setup() {
     // Fill the frame with black.
     for (int y = 0; y < FRAME_HEIGHT; y++) {
         for (int x = 0; x < FRAME_WIDTH; x++) {
-            frame[y][x] = COLOR_TO_BSRR(C_BLACK);
+            frame[y][x] = VGA_SET_BSRR(BSRR_BLACK);
         }
     }
 
@@ -256,7 +256,7 @@ void setup() {
     Timer4.attachCompare1Interrupt(isr_start_hsync);
     Timer4.setCompare2(276);
     Timer4.attachCompare2Interrupt(isr_back_porch);
-    Timer4.setCompare3(413);
+    Timer4.setCompare3(450); // delayed 40ish cycles; improves quality
     Timer4.attachCompare3Interrupt(isr_draw_line);
     Timer4.setCompare4(2266);   // beginning of the right border
     Timer4.attachCompare4Interrupt(isr_front_porch);
@@ -288,40 +288,34 @@ void isr_back_porch(void) {
     y++;
     frame_row = frame[y / (480/FRAME_HEIGHT)];
 
-    // Back to the top
-    if(y >= 523) {
-        y = 1;
+    // if we're about to draw a frame, stop now
+    if (y < 480) return;
+
+    switch (y) {
+    case 480:
+        v_active = 0;           // stop drawing
+        break;
+    case 490:
+        VGA_VS_LOW;             // start vsync
+        break;
+    case 492:
+        VGA_VS_HIGH;            // end vsync
+        break;
+    case 523:                   // Back to the top
+        y = 0;
         v_active = 1;
         frame_row = frame[0];
-        return;
+        return;                 // (we're about to draw)
+    default:
+        break;
     }
 
-    // we could also dedicate lines 493--522 to advancing the frame,
-    // if we wanted to (and lines 479, 490, 492, and 523 could also be
-    // used, since we don't really do anything during those here).
-    //
-    // don't worry about it for now.
-
-    // Other vsync stuff below the image
-    if(y == 492) {
-        VGA_VS_HIGH;
-        return;
-    }
-    if(y == 490) {
-        VGA_VS_LOW;
-        return;
-    }
-    if(y == 479) {
-        v_active = 0;           // stop drawing
-        return;
-    }
-
-    // dedicate lines 480--489 to thinking about the next frame, one
-    // line at a time
-    if(y >= 480) {
-        update_frame();
-        return;
-    }
+    // give lines 479--522 to advancing the frame, one line at a time.
+    // probably there's a smarter way to do this so that hsync will
+    // interrupt us while we're thinking, but this works okay so long
+    // as the frame update computation can be split into line-sized
+    // chunks.
+    update_frame();
 }
 
 // This is the main horizontal sweep
@@ -329,20 +323,32 @@ void isr_draw_line(void) {
     // Skip if we're not in the image at all
     if(!v_active) { return; }
 
-    // draw a red border.  for loop setup makes this appear as a band.
-    VGA_SET_BSRR(BSRR_RED);
+    // draw a white border.  for loop setup makes this appear as a band.
+    VGA_SET_BSRR(BSRR_WHITE);
 
-    // main loop: draw the contents of the frame as fast as we can.
-    // use VGA_BIT so per-iteration time is deterministic.
-    for(x = 0; x < FRAME_WIDTH; x++) {
-        VGA_SET_BSRR(frame_row[x]);
+    if (5 < y && y < 475) {
+        // delay here as it's the likely branch
+        volatile_int++;
+        volatile_int++;
+        volatile_int++;
+        volatile_int++;
+
+        // main loop: draw the contents of the frame as fast as we can.
+        // use VGA_BIT so per-iteration time is deterministic.
+        for(x = 0; x < FRAME_WIDTH; x++) {
+            VGA_SET_BSRR(frame_row[x]);
+        }
+    } else {
+        for(x = 0; x < FRAME_WIDTH; x++) {
+            VGA_SET_BSRR(BSRR_WHITE);
+        }
     }
 
     // delay a bit so the last pixel in the row doesn't look so narrow
     volatile_int++;
 
-    // then draw another red border
-    VGA_SET_BSRR(BSRR_RED);
+    // then draw another white border
+    VGA_SET_BSRR(BSRR_WHITE);
     volatile_int++;
     volatile_int++;
     volatile_int++;
@@ -362,17 +368,18 @@ void isr_front_porch(void) {
 void update_frame_chunk(int chunk) {
     int start = chunk * CHUNK_SIZE;
     int end = start + CHUNK_SIZE;
-    if (end > FRAME_N_PIXELS) end = FRAME_N_PIXELS;
     uint32* flat_frame = (uint32*)frame;
+
+    if (end > FRAME_N_PIXELS) end = FRAME_N_PIXELS;
+
     for (int i = start; i < end; i++) {
-        flat_frame[i] = bsrr_color_wheel[current_color];
+        flat_frame[i] = current_color;
     }
 }
 
 void update_frame(void) {
-    return;
-    // right now, we've got lines 480--489 to do our thinking.  we can
-    // have more if we want; see the comment in isr_back_porch.
+    static int chunk = 0;
+    // we have lines 480--522 to do our thinking.
     switch (y) {
     case 480:
         // put this here so we only do it once per frame
@@ -380,48 +387,28 @@ void update_frame(void) {
             return;
         } else {
             color_count = 0;
-            if (++current_color >= N_COLOR_WHEEL_COLORS)
-                current_color = 0;
-            update_frame_chunk(0);
+            chunk = 0;
+            if (++current_color_idx >= N_COLOR_WHEEL_COLORS)
+                current_color_idx = 0;
+            current_color = bsrr_color_wheel[current_color_idx];
+            update_frame_chunk(chunk++);
         }
         break;
-    case 481:
-        if (color_count == 0) update_frame_chunk(1);
-        break;
-    case 482:
-        if (color_count == 0) update_frame_chunk(2);
-        break;
-    case 483:
-        if (color_count == 0) update_frame_chunk(3);
-        break;
-    case 484:
-        if (color_count == 0) update_frame_chunk(4);
-        break;
-    case 485:
-        if (color_count == 0) update_frame_chunk(5);
-        break;
-    case 486:
-        if (color_count == 0) update_frame_chunk(6);
-        break;
-    case 487:
-        if (color_count == 0) update_frame_chunk(7);
-        break;
-    case 488:
-        if (color_count == 0) update_frame_chunk(8);
-        break;
-    case 489:
-        if (color_count == 0) update_frame_chunk(9);
-        break;
     default:
-        ASSERT(0);
+        if (color_count == 0) update_frame_chunk(chunk++);
         break;
     }
 }
 
 //---------------------------------- main() -----------------------------------
 
-int main(void) {
+// Force init to be called *first*, i.e. before static object allocation.
+// Otherwise, statically allocated object that need libmaple may fail.
+ __attribute__(( constructor )) void premain() {
     init();
+}
+
+int main(void) {
     setup();
 
     while (1) {
