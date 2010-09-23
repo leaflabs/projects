@@ -76,23 +76,51 @@
 #define C_RED   (C_R0 | C_R1 | C_R2)
 #define C_GREEN (C_G0 | C_G1 | C_G2)
 #define C_BLUE  (C_B0 | C_B1 | C_B2)
-// secondary colors
-#define C_MAGENTA (C_R2 | C_B2)
-#define C_CYAN    (C_G2 | C_B2)
-#define C_YELLOW  (C_G2 | C_R2)
+// secondary colors.  technically too bright, but we're dim as it is,
+// due to inaccuracies in the resistor DAC.
+#define C_MAGENTA (C_R2 | C_R1 | C_R0 | C_B2 | C_B1 | C_B0)
+#define C_CYAN    (C_G2 | C_G1 | C_G0 | C_B2 | C_B1 | C_B0)
+#define C_YELLOW  (C_G2 | C_G1 | C_G0 | C_R2 | C_R1 | C_R0)
 // white
 #define C_WHITE (C_RED | C_GREEN | C_BLUE)
 // pale grey for the border
 #define C_PALE_GRAY (C_R0 | C_G0 | C_B0)
 
+// a series of masks used to progressively brighten and dim a color.
+// the color pins go bitwise in the lower 16 bits of a BSRR value as
+// (XX=nothing, set to zero):
+//
+// bit:   15  14  13  12  11  10  09  08  07  06  05  04  03  02  01  00
+// color: R0  R1  R2  G0  G1  G2  B2  XX  XX  XX  XX  XX  XX  XX  B0  B1
+//
+// thus, for each color, keep bits:
+//           012
+#define MASK_000 (0x0000)
+#define MASK_001 (0x9002)
+#define MASK_010 (0x4801)
+#define MASK_011 (0xD803)
+#define MASK_100 (0x2600)         // the hacker quarterly?...
+#define MASK_101 (0xC602)
+#define MASK_110 (0x6E01)
+#define MASK_111 (0xFE03)
+// you can cyclically iterate through this array to get fade in and
+// out (see update_frame_chunk() for an example).
+#define BRIGHTNESS_MASKS_LEN (25)
+uint32 brightness_masks[] = \
+    {MASK_000, MASK_001, MASK_010, MASK_011, MASK_100, MASK_101,
+     MASK_110, MASK_110, MASK_110, MASK_110,
+     MASK_111, MASK_111, MASK_111, MASK_111, MASK_111, MASK_111,
+     MASK_110, MASK_110, MASK_110, MASK_110,
+     MASK_101, MASK_100, MASK_011, MASK_010, MASK_001};
+
 // given an color (which is an OR of BIT applied to the [RGB][012]_BIT
 // macros, above), convert it into a 32-bit integer which, if written
 // to the BSRR, will set the corresponding [RGB][012]_PIN pins.
-#define COLOR_TO_BSRR(c) \
-    ((c) |                                                              \
-     BIT(R0_BIT+16) | BIT(R1_BIT+16) | BIT(R2_BIT+16) |                 \
-     BIT(G0_BIT+16) | BIT(G1_BIT+16) | BIT(G2_BIT+16) |                 \
+#define BSRR_HIGH_BITS                                  \
+    (BIT(R0_BIT+16) | BIT(R1_BIT+16) | BIT(R2_BIT+16) | \
+     BIT(G0_BIT+16) | BIT(G1_BIT+16) | BIT(G2_BIT+16) | \
      BIT(B0_BIT+16) | BIT(B1_BIT+16) | BIT(B2_BIT+16))
+#define COLOR_TO_BSRR(c) ((c) | BSRR_HIGH_BITS)
 
 // convenience macros for BSRR color values.
 #define BSRR_BLACK     COLOR_TO_BSRR(C_BLACK)
@@ -200,31 +228,39 @@ uint32 current_color = 0;
 
 /* Mondrian images:
  *
- * Each of these files contains a uint32[] image suitable for copying
- * into the framebuffer.  These images have the same name as the
- * included file, minus the '.c', and have __attribute__ set so
- * they're stored in flash (otherwise we'd run out of RAM).
+ * Each of these files contains a uint32[] image whose elements are
+ * suitable for passing into COLOR_TO_BSRR.  These images have the
+ * same name as the included file, minus the '.c', and have
+ * __attribute__ set so they're stored in flash (otherwise we'd run
+ * out of RAM, as each one takes ~10k).
  */
 
 #include "tableau_2.c"
 #include "comp_ybr.c"
 #include "comp_ii.c"
 
-#define N_STATIC_IMAGES 3
-uint32* static_images[N_STATIC_IMAGES] = \
+#define N_MONDRIAN_IMAGES 3
+uint32* mondrian_images[N_MONDRIAN_IMAGES] = \
     {tableau_2,
      comp_ybr,
      comp_ii};
-int static_images_idx = 0;
+int mondrian_images_idx = 0;
 
 /* Frame update stuff */
 
-// number of framebuffer pixels to update per scan line in update_frame()
-#define CHUNK_SIZE 70
+// number of framebuffer pixels to update per non-visible scan line in
+// update_frame.  this was empirically determined.
+#define BIG_CHUNK_SIZE 61
+// number of framebuffer pixels to update per visible scan line (i.e.,
+// after isr_draw_line is done with its job).  also empirically
+// determined.
+#define SMALL_CHUNK_SIZE 4
 // How many frames go by before we redisplay
-#define FRAME_OVERFLOW 360
+#define FRAME_OVERFLOW 5
 // Number of frames since last framebuffer update; from 0 to FRAME_OVERFLOW-1.
-int frame_count = 0;
+int frame_count = FRAME_OVERFLOW-1; // so the first ++ overflows it
+// current index into brightness_masks
+int brightness_mask_idx = -1; // set to -1 so the first ++ will make it zero
 
 // These interrupt service routines control hsync, vsync, and sending
 // the visible part of each scan line to the monitor.
@@ -233,10 +269,12 @@ void isr_back_porch(void);
 void isr_draw_line(void);
 void isr_front_porch(void);
 
-// This function is called during scan lines 480--489; these lines
-// aren't visible in the display, and so it's a good time to compute
-// what the next frame should be.
-void update_frame(void);
+// This function is called after we finish drawing during each scan
+// line, and at the beginning of the line during lines 480--489 (these
+// lines aren't visible in the display, and so it's a good time to
+// compute what the next frame should be).  It's responsible for not
+// taking too long.
+inline void update_frame(void);
 
 //------------------------------ setup()/loop() -------------------------------
 
@@ -341,9 +379,8 @@ void isr_back_porch(void) {
 
     // give lines 479--522 to advancing the frame, one line at a time.
     // probably there's a smarter way to do this so that hsync will
-    // interrupt us while we're thinking, but this works okay so long
-    // as the frame update computation can be split into line-sized
-    // chunks.
+    // interrupt us while we're thinking, but this works okay, since
+    // frame upate can be easily split into interruptible chunks.
     update_frame();
 }
 
@@ -368,15 +405,13 @@ void isr_draw_line(void) {
             VGA_SET_BSRR(frame_row[x]);
         }
     } else {
-        // kludge together a top border -- this goes faster since it
-        // doesn't have to load a value from frame_row, so we don't do
-        // it as many times
-        for(x = 0; x < FRAME_WIDTH - 7; x++) {
+        // kludge together a top/bottom border
+        for(x = 0; x < FRAME_WIDTH + 2; x++) {
             VGA_SET_BSRR(BSRR_PALE_GRAY);
         }
     }
 
-    // delay a bit so the last pixel in the row doesn't look so narrow
+    // delay a bit (voodoo)
     volatile_int++;
     // add another pale gray border
     VGA_SET_BSRR(BSRR_PALE_GRAY);
@@ -394,6 +429,9 @@ void isr_draw_line(void) {
 
     // then make the rest black
     VGA_SET_BSRR(BSRR_BLACK);
+
+    // we finish early, so let's not waste those precious cycles.
+    update_frame();
 }
 
 void isr_front_porch(void) {
@@ -403,39 +441,47 @@ void isr_front_porch(void) {
 
 //------------------------------- frame update --------------------------------
 
-void update_frame_chunk(int chunk) {
-    int start = chunk * CHUNK_SIZE;
-    int end = start + CHUNK_SIZE;
+void update_frame_chunk_mondrian(int start_pixel, int n_pixels) {
+    int end = start_pixel + n_pixels;
 
     if (end > FRAME_N_PIXELS) end = FRAME_N_PIXELS;
 
     uint32* flat_frame = (uint32*)frame;
-    uint32* static_frame = static_images[static_images_idx];
+    uint32* mondrian_frame = mondrian_images[mondrian_images_idx];
+    uint32 brightness_mask = brightness_masks[brightness_mask_idx];
 
-    for (int i = start; i < end; i++) {
-        flat_frame[i] = static_frame[i];
+    for (int i = start_pixel; i < end; i++) {
+        flat_frame[i] = COLOR_TO_BSRR(mondrian_frame[i] & brightness_mask);
     }
 }
 
-void update_frame(void) {
-    static int chunk = 0;
-    // we have lines 480--522 to do our thinking.
-    switch (y) {
-    case 480:
+// mondrian frame update
+//
+// this gets called with false when we have an entire line to do our
+// thinking, and true when it's called after an hline has been drawn.
+void update_frame() {
+    static int cur_pixel = 0;
+
+    if (y < 480 && frame_count == 0) {
+        update_frame_chunk_mondrian(cur_pixel, SMALL_CHUNK_SIZE);
+        cur_pixel += SMALL_CHUNK_SIZE;
+    } else if (y > 480 && frame_count == 0) {
+        update_frame_chunk_mondrian(cur_pixel, BIG_CHUNK_SIZE);
+        cur_pixel += BIG_CHUNK_SIZE;
+    } else if (y == 480) {
         // put this here so we only do it once per frame
-        if (++frame_count < FRAME_OVERFLOW) {
-            return;
-        } else {
+        if (++frame_count == FRAME_OVERFLOW) {
             frame_count = 0;
-            chunk = 0;
-            if (++static_images_idx == N_STATIC_IMAGES)
-                static_images_idx = 0;
-            update_frame_chunk(chunk++);
+            cur_pixel = 0;
+            if (++brightness_mask_idx == BRIGHTNESS_MASKS_LEN) {
+                brightness_mask_idx = 0;
+                if (++mondrian_images_idx == N_MONDRIAN_IMAGES)
+                    mondrian_images_idx = 0;
+            }
+            // fudge factor for performing above lines
+            update_frame_chunk_mondrian(cur_pixel, BIG_CHUNK_SIZE - 5);
+            cur_pixel += BIG_CHUNK_SIZE - 5;
         }
-        break;
-    default:
-        if (frame_count == 0) update_frame_chunk(chunk++);
-        break;
     }
 }
 
