@@ -199,9 +199,10 @@ uint8 color_count = 0;
 
 // These interrupt service routines control hsync, vsync, and sending
 // the visible part of each scan line to the monitor.
-void isr_porch(void);
-void isr_draw_line(void);
 void isr_start_hsync(void);
+void isr_back_porch(void);
+void isr_draw_line(void);
+void isr_front_porch(void);
 
 // This function is called during scan lines 480--489; these lines
 // aren't visible in the display, and so it's a good time to compute
@@ -246,14 +247,19 @@ void setup() {
     Timer4.setChannel1Mode(TIMER_OUTPUTCOMPARE);
     Timer4.setChannel2Mode(TIMER_OUTPUTCOMPARE);
     Timer4.setChannel3Mode(TIMER_OUTPUTCOMPARE);
+    Timer4.setChannel4Mode(TIMER_OUTPUTCOMPARE);
     Timer4.setOverflow(2287);   // Total line time
 
-    Timer4.setCompare1(200);
-    Timer4.attachCompare1Interrupt(isr_porch);
-    Timer4.setCompare2(START_IMAGE);
-    Timer4.attachCompare2Interrupt(isr_draw_line);
-    Timer4.setCompare3(1);      // Could be zero I guess
-    Timer4.attachCompare3Interrupt(isr_start_hsync);
+    // we do this in the following order: hsync, back porch, video,
+    // front porch.  vsync is handled with a hack in isr_back_porch.
+    Timer4.setCompare1(1);      // 0 was causing jitter
+    Timer4.attachCompare1Interrupt(isr_start_hsync);
+    Timer4.setCompare2(276);
+    Timer4.attachCompare2Interrupt(isr_back_porch);
+    Timer4.setCompare3(413);
+    Timer4.attachCompare3Interrupt(isr_draw_line);
+    Timer4.setCompare4(2266);   // beginning of the right border
+    Timer4.attachCompare4Interrupt(isr_front_porch);
 
     Timer4.setCount(0);         // Ready...
     Timer4.resume();            // Go!
@@ -265,12 +271,23 @@ void loop() {
 
 //--------------------------------- VGA ISRs ----------------------------------
 
-// This ISR will end horizontal sync for most of the image and
-// setup the vertical sync for higher line counts
-void isr_porch(void) {
+// Start horizonal sync
+void isr_start_hsync(void) {
+    VGA_HS_LOW;
+}
+
+// This ISR:
+// - ends horizontal sync for most of the image,
+// - sets up the vertical sync for higher line counts, and
+// - passes out computation time to update the framebuffer when we're
+//   past the visible lines.
+void isr_back_porch(void) {
+    // end hsync
     VGA_HS_HIGH;
+
     y++;
     frame_row = frame[y / (480/FRAME_HEIGHT)];
+
     // Back to the top
     if(y >= 523) {
         y = 1;
@@ -286,11 +303,11 @@ void isr_porch(void) {
     // don't worry about it for now.
 
     // Other vsync stuff below the image
-    if(y >= 492) {
+    if(y == 492) {
         VGA_VS_HIGH;
         return;
     }
-    if(y >= 490) {
+    if(y == 490) {
         VGA_VS_LOW;
         return;
     }
@@ -312,23 +329,32 @@ void isr_draw_line(void) {
     // Skip if we're not in the image at all
     if(!v_active) { return; }
 
+    // draw a red border.  for loop setup makes this appear as a band.
+    VGA_SET_BSRR(BSRR_RED);
+
     // main loop: draw the contents of the frame as fast as we can.
     // use VGA_BIT so per-iteration time is deterministic.
     for(x = 0; x < FRAME_WIDTH; x++) {
-        // VGA_SET_BSRR(frame_row[x]);
-        VGA_SET_BSRR(BSRR_RED);
+        VGA_SET_BSRR(frame_row[x]);
     }
 
     // delay a bit so the last pixel in the row doesn't look so narrow
     volatile_int++;
 
-    // black out what's left, or vsync won't work
+    // then draw another red border
+    VGA_SET_BSRR(BSRR_RED);
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+    volatile_int++;
+
+    // and black out the rest
     VGA_SET_BSRR(BSRR_BLACK);
 }
 
-// Start horizonal sync
-void isr_start_hsync(void) {
-    VGA_HS_LOW;
+void isr_front_porch(void) {
+    // VGA standard says we should black out what's left
+    VGA_SET_BSRR(BSRR_BLACK);
 }
 
 //------------------------------- frame update --------------------------------
@@ -346,7 +372,7 @@ void update_frame_chunk(int chunk) {
 void update_frame(void) {
     return;
     // right now, we've got lines 480--489 to do our thinking.  we can
-    // have more if we want; see the comment in isr_porch.
+    // have more if we want; see the comment in isr_back_porch.
     switch (y) {
     case 480:
         // put this here so we only do it once per frame
