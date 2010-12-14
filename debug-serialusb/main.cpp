@@ -20,7 +20,7 @@
 #define ERROR_CHAR ('*')
 #define CLEAR_CHAR ('_')
 
-#define RX_ONLY 1
+#define RX_ONLY 0
 
 void setup() {
     pinMode(BOARD_LED_PIN, OUTPUT);
@@ -53,12 +53,20 @@ void fill_buf(uint8 *buf, int len, uint8 c) {
     for (int i = 0; i < len; i++) buf[i] = c;
 }
 
+void send_buf_single(uint8 *buf, int len) {
+    for (int i=0;i<len;i++) {
+        usbBlockingSendByte((char)buf[i]);
+    }
+}
+
 void send_buf(uint8 *buf, int len) {
+    digitalWrite(13,HIGH);
     uint8 sent = 0;
     while (sent < len) {
         int n = usbSendBytes(buf + sent, len - sent);
         sent += n;
     }
+    digitalWrite(13,LOW);
 }
 
 void recv_buf(uint8 *buf, int len) {
@@ -66,8 +74,10 @@ void recv_buf(uint8 *buf, int len) {
     uint8 expected = choose_fill(len);
     while (recvd < len) {
         int n = usbReceiveBytes(buf + recvd, len - recvd);
+        for (int i = 0; i < n; i++) {
+            if (buf[recvd + i] != expected) buf[recvd + i] = ERROR_CHAR;
+        }
         recvd += n;
-        toggleLED();
     }
 }
 
@@ -115,11 +125,11 @@ void loop() {
 
     // round-trip the buffer once, marking places where received
     // wasn't expected
-    send_buf(buf, len);
+    send_buf_single(buf, len);
     recv_buf(buf, len);
 
     // send it again, with errors marked
-    send_buf(buf, len);
+    send_buf_single(buf, len);
 
     len *= 2;
     if (len > 128) len = 1;

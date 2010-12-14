@@ -40,6 +40,7 @@ def serial_echo(port, baudrate=BAUD):
         print('read packet: "{1}"'.format(len(s), s))
         ser.write(s)
         print('wrote packet back.')
+
         s = ser.read(size)
         print('read packet response: "{1}"'.format(len(s), s))
         if ERROR_CHAR in s: print('-- errors detected.')
