@@ -20,6 +20,8 @@
 #define ERROR_CHAR ('*')
 #define CLEAR_CHAR ('_')
 
+#define RX_ONLY 1
+
 void setup() {
     pinMode(BOARD_LED_PIN, OUTPUT);
 }
@@ -64,11 +66,17 @@ void recv_buf(uint8 *buf, int len) {
     uint8 expected = choose_fill(len);
     while (recvd < len) {
         int n = usbReceiveBytes(buf + recvd, len - recvd);
-        for (int i = 0; i < n; i++) {
-            if (buf[recvd + i] != expected) buf[recvd + i] = ERROR_CHAR;
-        }
         recvd += n;
         toggleLED();
+    }
+}
+
+void strobe() {
+    for (int i=0;i<5;i++) {
+        toggleLED();
+        delay(100);
+        toggleLED();
+        delay(100);
     }
 }
 
@@ -77,6 +85,24 @@ void loop() {
     static int len = 1;
     uint8 fill = choose_fill(len);
 
+#if RX_ONLY
+    waitForButtonPress(0);
+    recv_buf(buf,len);
+
+    /* flush the buffer */
+    while (usbBytesAvailable() > 0) {
+        strobe();
+        SerialUSB.read();
+    }   
+
+    SerialUSB.print("size = ");
+    SerialUSB.print(len);
+    SerialUSB.print(", firstchar = ");
+    SerialUSB.println((char)buf[0]);
+
+    len *=2;
+    if (len > 128) len = 1;
+#else
     // let the host know what we think is about to happen
     waitForButtonPress(0);
     SerialUSB.print("size = ");
@@ -97,6 +123,7 @@ void loop() {
 
     len *= 2;
     if (len > 128) len = 1;
+#endif
 }
 
 // Force init to be called *first*, i.e. before static object allocation.
