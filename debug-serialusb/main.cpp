@@ -18,12 +18,23 @@
 #include "usb.h"
 
 #define ERROR_CHAR ('*')
-#define CLEAR_CHAR ('_')
+#define MAX_TRANS_SIZE 60
 
 #define RX_ONLY 0
 
+#define DEBUG_USART Serial1
+
+#ifdef DEBUG_USART
+#define DEBUG(x) DEBUG_USART.println(x)
+#else
+#define DEBUG(x)
+#endif
+
 void setup() {
     pinMode(BOARD_LED_PIN, OUTPUT);
+#ifdef DEBUG_USART
+    DEBUG_USART.begin(9600);
+#endif
 }
 
 uint8 choose_fill(int len) {
@@ -91,49 +102,56 @@ void strobe() {
 }
 
 void loop() {
-    static uint8 buf[128];
+    static uint8 buf[MAX_TRANS_SIZE];
     static int len = 1;
     uint8 fill = choose_fill(len);
 
-#if RX_ONLY
     waitForButtonPress(0);
+
+#if RX_ONLY
     recv_buf(buf,len);
 
     /* flush the buffer */
     while (usbBytesAvailable() > 0) {
         strobe();
         SerialUSB.read();
-    }   
+    }
 
     SerialUSB.print("size = ");
     SerialUSB.print(len);
     SerialUSB.print(", firstchar = ");
     SerialUSB.println((char)buf[0]);
 
-    len *=2;
-    if (len > 128) len = 1;
 #else
     // let the host know what we think is about to happen
-    waitForButtonPress(0);
     SerialUSB.print("size = ");
     SerialUSB.print(len);
+    DEBUG("sent size");
+
     SerialUSB.print(", fill = ");
     SerialUSB.println(fill);
+    DEBUG("sent fill");
 
-    // clear out last run, then fill with correct char for current len
+    // fill with correct char for current len
     fill_buf(buf, len, fill);
+    DEBUG("filled buf");
 
     // round-trip the buffer once, marking places where received
     // wasn't expected
     send_buf_single(buf, len);
+    DEBUG("sent buf byte at a time");
     recv_buf(buf, len);
+    DEBUG("got buf back");
 
     // send it again, with errors marked
     send_buf_single(buf, len);
+    DEBUG("sent buf back with errors marked");
 
-    len *= 2;
-    if (len > 128) len = 1;
+    DEBUG("");
 #endif
+
+    len *=2;
+    if (len > MAX_TRANS_SIZE) len = 1;
 }
 
 // Force init to be called *first*, i.e. before static object allocation.

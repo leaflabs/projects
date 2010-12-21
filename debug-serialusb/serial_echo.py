@@ -6,7 +6,7 @@ import sys
 import serial
 
 BAUD = 9600
-MAX_PACKET_SIZE = 128
+MAX_TRANS_SIZE = 60
 ERROR_CHAR = '*'
 
 def serial_tx_only(port,baudrate=BAUD):
@@ -21,23 +21,22 @@ def serial_tx_only(port,baudrate=BAUD):
         ser.write(s)
         print('wrote packet')
         print('got back {0}'.format(ser.readline().strip()))
-        
+
         size *= 2
         val += 1
-        if size > MAX_PACKET_SIZE:
+        if size > MAX_TRANS_SIZE:
             size = 1
             val = 1
 
 def serial_echo(port, baudrate=BAUD):
     ser = serial.Serial(port, baudrate=baudrate)
 
-
     size = 1
     while True:
         print('Handshake: "{0}"'.format(ser.readline().strip()))
         print('size = {0}'.format(size))
         s = ser.read(size)
-        print('read packet: "{1}"'.format(len(s), s))
+        print('read packet:          "{1}"'.format(len(s), s))
         ser.write(s)
         print('wrote packet back.')
 
@@ -48,9 +47,8 @@ def serial_echo(port, baudrate=BAUD):
         print()
 
         size *= 2
-        if size > MAX_PACKET_SIZE:
+        if size > MAX_TRANS_SIZE:
             size = 1
-
 
 if __name__ == '__main__':
     parser = optparse.OptionParser(usage='usage: %prog [options] port')
@@ -58,7 +56,6 @@ if __name__ == '__main__':
                       help='Baud rate (Kbps)')
     parser.add_option('-t', '--only-send', default=False,
                       help='Test program will only send bytes')
-
 
     opts, args = parser.parse_args()
 
