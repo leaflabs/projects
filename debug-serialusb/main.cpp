@@ -49,7 +49,6 @@ void setup() {
 #endif
 
     waitForButtonPress(0);
-    SerialUSB.println("starting loop");
     DEBUG("starting loop");
 }
 
