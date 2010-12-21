@@ -19,8 +19,17 @@
 
 #define ERROR_CHAR ('*')
 #define MAX_TRANS_SIZE 60
+#define RECV_TIMEOUT 5000
 
 #define RX_ONLY 0
+
+#define DEBUG_DELAY 500
+
+#ifdef DEBUG_DELAY
+#define PAUSE() delay(DELAY_AFTER_RECV_BUF)
+#else
+#define PAUSE()
+#endif
 
 #define DEBUG_USART Serial1
 
@@ -30,11 +39,18 @@
 #define DEBUG(x)
 #endif
 
+void strobe(void);
+
 void setup() {
     pinMode(BOARD_LED_PIN, OUTPUT);
+
 #ifdef DEBUG_USART
     DEBUG_USART.begin(9600);
 #endif
+
+    waitForButtonPress(0);
+    SerialUSB.println("starting loop");
+    DEBUG("starting loop");
 }
 
 uint8 choose_fill(int len) {
@@ -80,20 +96,41 @@ void send_buf(uint8 *buf, int len) {
     digitalWrite(13,LOW);
 }
 
-void recv_buf(uint8 *buf, int len) {
-    uint8 recvd = 0;
+void recv_buf(uint8 *buf, uint32 len) {
+    uint32 recvd = 0;
     uint8 expected = choose_fill(len);
+    uint32 start = millis();
+    uint32 now;
+    bool timeout = false;
+
     while (recvd < len) {
-        int n = usbReceiveBytes(buf + recvd, len - recvd);
-        for (int i = 0; i < n; i++) {
+        uint32 n = usbReceiveBytes(buf + recvd, len - recvd);
+        for (uint32 i = 0; i < n; i++) {
             if (buf[recvd + i] != expected) buf[recvd + i] = ERROR_CHAR;
         }
         recvd += n;
+
+        now = millis();
+        if (now - start > RECV_TIMEOUT) {
+            timeout = true;
+            break;
+        }
+    }
+
+    if (timeout) {
+        DEBUG("number of bytes received:");
+        DEBUG(recvd);
+        DEBUG("time elapsed:");
+        DEBUG(now - start);
+
+        while (1) {
+            strobe();
+        }
     }
 }
 
 void strobe() {
-    for (int i=0;i<5;i++) {
+    for (int i = 0; i < 5; i++) {
         toggleLED();
         delay(100);
         toggleLED();
@@ -103,10 +140,8 @@ void strobe() {
 
 void loop() {
     static uint8 buf[MAX_TRANS_SIZE];
-    static int len = 1;
+    static uint32 len = 1;
     uint8 fill = choose_fill(len);
-
-    waitForButtonPress(0);
 
 #if RX_ONLY
     recv_buf(buf,len);
@@ -123,35 +158,38 @@ void loop() {
     SerialUSB.println((char)buf[0]);
 
 #else
-    // let the host know what we think is about to happen
+    // handshake
     SerialUSB.print("size = ");
     SerialUSB.print(len);
-    DEBUG("sent size");
+    // DEBUG("sent size");
 
     SerialUSB.print(", fill = ");
     SerialUSB.println(fill);
-    DEBUG("sent fill");
+    // DEBUG("sent fill");
 
     // fill with correct char for current len
     fill_buf(buf, len, fill);
-    DEBUG("filled buf");
+    // DEBUG("filled buf");
 
-    // round-trip the buffer once, marking places where received
-    // wasn't expected
+    // send buffer
     send_buf_single(buf, len);
-    DEBUG("sent buf byte at a time");
+    // DEBUG("sent buf byte at a time");
+
+    // read buffer back, marking errors
     recv_buf(buf, len);
-    DEBUG("got buf back");
+    // DEBUG("got buf back");
 
-    // send it again, with errors marked
+    // send buffer response
     send_buf_single(buf, len);
-    DEBUG("sent buf back with errors marked");
+    // DEBUG("sent buf back with errors marked");
 
-    DEBUG("");
+    // DEBUG("");
 #endif
 
     len *=2;
     if (len > MAX_TRANS_SIZE) len = 1;
+
+    // waitForButtonPress(0);
 }
 
 // Force init to be called *first*, i.e. before static object allocation.

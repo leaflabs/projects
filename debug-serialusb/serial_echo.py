@@ -8,6 +8,7 @@ import serial
 BAUD = 9600
 MAX_TRANS_SIZE = 60
 ERROR_CHAR = '*'
+NONBLOCKING_TIMEOUT = 2.5       # seconds
 
 def serial_tx_only(port,baudrate=BAUD):
     ser = serial.Serial(port, baudrate=baudrate)
@@ -36,19 +37,32 @@ def serial_echo(port, baudrate=BAUD):
         print('Handshake: "{0}"'.format(ser.readline().strip()))
         print('size = {0}'.format(size))
         s = ser.read(size)
-        print('read packet:          "{1}"'.format(len(s), s))
-        ser.write(s)
-        print('wrote packet back.')
+        print('read buffer:          "{0}"'.format(s))
+        nbytes = ser.write(s)
+        if nbytes == len(s):
+            print('sent buffer back ({0} bytes)'.format(nbytes))
+        else:
+            raise RuntimeError('nbytes {0} != size {1}'.format(nbytes, size))
 
-        s = ser.read(size)
-        print('read packet response: "{1}"'.format(len(s), s))
-        if ERROR_CHAR in s: print('-- errors detected.')
+        s = nonblocking_read(ser, size)
+        print('read buffer response: "{1}"'.format(len(s), s))
+        if ERROR_CHAR in s or len(s) < size:
+            raise RuntimeError("errors detected on {0}".format(
+                    repr(bytearray(s))))
 
         print()
 
         size *= 2
         if size > MAX_TRANS_SIZE:
             size = 1
+
+def nonblocking_read(ser, nbytes=1):
+    old = ser.timeout
+    try:
+        ser.timeout = NONBLOCKING_TIMEOUT
+        return ser.read(nbytes)
+    finally:
+        ser.timeout = old
 
 if __name__ == '__main__':
     parser = optparse.OptionParser(usage='usage: %prog [options] port')
