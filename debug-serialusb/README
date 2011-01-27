@@ -1,0 +1,29 @@
+Debug SerialUSB Tests:
+
+TX - 
+usb.h    -
+   Test sketch main-tx-test.cpp
+         - send packet containing 1 'A', then send 2 'B's, then 3 'C's...until the packets are of length 2048, roll over the values to remain            in printable ascii
+   Test script serial_tx_filetest.py
+         - first run the test sketch, and dump the serial ouput to a file via something like:
+              $> cat /dev/ttyACM0 > test_file.txt
+           you may need to run screen /dev/ttyACM0 first and then close it to get linux to load the serial device    
+           once you call cat, hit the BUT button to start the data dump over serial, you can stop the cat once the led blinks
+         - run this test_file through serial_tx_filetest.py which just does a sanity check that no bytes fell on the floor, 
+           if you only "failed" on lines 1 and 2047, then the data was good. These end cases were just the result of laziness
+         - This test seems to work for large packets (2048 bytes) and no send delays! so tx works! 
+   Test script serial_tx_test.py
+         - run the sketch, run the python script, hit enter, then hit the BUT button
+         - this test script tends to fail randomly (with a greater tendency to fail on 512 byte packets than other numbers) where the failure 
+           rate goes down as you add send delays. A send delay of 1us universally fails on the first packet of length 1, a delay of 1ms 
+           tends to make it into the 500 byte packet range, and a send delay of 10ms tends to succeed all the way through the 2048th packet. 
+         - The fact that this test failes, but the file dump test works means that the tx problem is actually with pyserial. We need to 
+           find a work around, better understand this problem, and submit a bug to the pyserial team. These tests have only been run under
+           debian lenny. 
+
+wirish   -
+
+RX -
+
+
+TX/RX -
