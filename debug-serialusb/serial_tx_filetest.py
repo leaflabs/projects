@@ -9,9 +9,18 @@ This little script fails on lines 1 and 2047, not a big deal and has
 more to do with edge cases of the analysis then a failure of the tx
 """
 
+import sys
+
 MAX_SEND_LEN = 2048
 
-data_file = open('maple_tx_test_data_d1.txt','r')
+filename = 'maple_tx_test_data_d1.txt'
+
+if len(sys.argv) > 1:
+    filename = sys.argv[1]
+
+print "Opening File %s" % (filename)
+
+data_file = open(filename,'r')
 lines = data_file.readlines()
 len_last_line = 0
 for i,line in enumerate(lines):

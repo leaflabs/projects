@@ -20,8 +20,34 @@ usb.h    -
          - The fact that this test failes, but the file dump test works means that the tx problem is actually with pyserial. We need to 
            find a work around, better understand this problem, and submit a bug to the pyserial team. These tests have only been run under
            debian lenny. 
+   A note on BAUDRATES:
+         -  slowing down the baud seems to have no effect on the failing python pyserial test (on the fly test). Furthermore, it is unknown
+            exactly how to set the baudrate using cat, but since cat /dev/ttyACM0 doesnt work without previously calling screen /dev/ttyACM0
+            (perhaps to initialize the device), perhaps calling "screen /dev/ttyACM0 9600" will set the baud for cat to 9600. Eitherway,
+            this seems to have no difference in the actual runtime of the serial dump, so either the baud is not used or calling screen before
+            calling cat with a baud argument does not set the baudrate. 
+   A note on bandwidth:
+         -  if MAX_SEND_LEN (in main-tx-test.cpp) is 2048, then we are sending 1+2+3+....2047+2048 = 2096128 ~= 2MB and if we run the sketch a            and dump its output via screen /dev/ttyACM0, it takes 16 seconds to run this transfer. So the average transfer rate is 131KB/s 
+            This is a naiive transfer, without trying to arrange bytes such that they are being packetized in groups of 64, etc. 
+   main-tx-speed-test.cpp:
+         - to further test bandwidth, this test just sends fixed packet lengths quickly. 
+           when setting MAX_SEND_LEN (packet len) to 32, and TOTAL_PACKETS to 65536, were sending exactly 2MB in 16 seconds over screen, for
+           a data rate of 131KB/s
+         - with 2MB but in chunks of 63 bytes each we get a data rate of: 
+           131KB/s
+         - with 2MB in chunks of 16 we get a data rate of:
+           83KB/s (so definitely slower)
+         - with 2MB in chunks of 64 bytes we get a data rate of:
+           131KB/s
+         - the max bandwidth if you actually call screen seems to be about 131KB/s, but if you
+           cat the serial device to a file, its more like 160KB/s. 
+         - with 2MB in chunks of 65, we dont get something MUCH slower, but it is slower at 115KB/s using screen.
+         - All of the speed tests seem to point to throttling by the OS (since twice as many required USB transactions forced on by smaller packet sizes does 
+           not cut speed in half). Thus, perhaps a teensyduino style unthrottled driver really would be faster!
 
-wirish   -
+
+wirish   
+
 
 RX -
 
