@@ -1,41 +1,70 @@
 from __future__ import print_function
 
-import optparse
+import contextlib
 import sys
 
 import serial
 
-BAUD = 115200
-PORT = "/dev/ttyACM0"
-MAX_PACKET_SIZE = 1024
-ERROR_CHAR = '*'
-MIN_PAKT_CHAR = 33
-MAX_PAKT_CHAR = 126
+ARITHMETIC_MAX_SIZE = 256
+FIXED_SIZE = 2048
+TIMEOUT = 1.0
+
+def arithmetic_send(usb_serial, usart):
+    size = 1
+    while True:
+        line = chr(size) * (size - 1) + '\n'
+        try:
+            nbytes = usb_serial.write(line)
+            if nbytes == len(line):
+                print('size = {0} sent'.format(size))
+            else:
+                print('serial.Serial.write not working; aborting')
+        except serial.SerialTimeoutException:
+            print('usb_serial write timeout')
+            return
+        finally:
+            if usart.inWaiting():
+                print('usart:')
+                print('\t')
+                while usart.inWaiting(): print(usart.read(), end='')
+                print()
+
+        print('size', size, 'response:')
+        print('\t', repr(usb_serial.readline()))
+
+        size += 1
+        if size > ARITHMETIC_MAX_SIZE: size = 1
+
+def fixed_send(usb_serial, usart):
+    data = bytearray(i % 256 for i in xrange(FIXED_SIZE))
+    print('sending:', repr(data))
+    while True:
+        n = usb_serial.write(data)
+        if (n != len(data)):
+            print('only sent', n, 'bytes out of', FIXED_SIZE, '; quitting')
+            return
+
+        print('sent all', n, 'bytes. responses:')
+
+        usb_line = usb_serial.readline().strip()
+        while usb_line != 'OK' and usb_line != 'STOP':
+            print('\tusb:', repr(usb_line))
+            usb_line = usb_serial.readline().strip()
+            
+        if usb_line == 'OK':
+            print('got OK; continuing')
+        elif usb_line == 'STOP':
+            print('got STOP; quitting')
+            return
+
+
+def main(usb_port, usart_port):
+    usb_serial = serial.Serial(usb_port, writeTimeout=TIMEOUT)
+    with contextlib.closing(usb_serial):
+        usart = serial.Serial(usart_port)
+        with contextlib.closing(usart):
+            fixed_send(usb_serial, usart)
 
 if __name__ == '__main__':
-    ser = serial.Serial(PORT, baudrate=BAUD)
-    pakt_size = 1
-    pakt_char = MIN_PAKT_CHAR
-
-    raw_input("Hit any key once youve started sketch")
-
-    num_bytes = ser.inWaiting()
-    print('got back {0}'.format(ser.read(num_bytes).strip()))
-
-    while pakt_size < MAX_PACKET_SIZE:
-        print('pakt_size = {0}'.format(pakt_size))
-        s = bytearray([pakt_char]*pakt_size)
-        print('writing packet - len,val: {0},{1}'.format(len(s),s))
-        raw_input("Ready?")
-        ser.write(s)
-        print('wrote packet')
-        print('got back {0}'.format(ser.readline().strip()))
-        while (ser.inWaiting() > 0):
-            print('got back {0}'.format(ser.readline().strip()))
-
-        pakt_char += 1
-        if (pakt_char > MAX_PAKT_CHAR):
-            pakt_char = MIN_PAKT_CHAR
-
-        pakt_size += 1
-        print('\n')
+    usb_port, usart_port = sys.argv[1:3]
+    main(usb_port, usart_port)

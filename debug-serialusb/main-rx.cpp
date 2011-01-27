@@ -9,9 +9,6 @@
 #include "wirish.h"
 #include "usb.h"
 
-#define BOARD_LED_PIN 13
-#define BOARD_BUT_PIN 38
-
 void print_sample(int,uint8,int);
 
 void print_sample(int num_in, uint8 fval, int seq,int errors) {
@@ -30,15 +27,15 @@ void setup() {
     pinMode(BOARD_LED_PIN, OUTPUT);
     pinMode(BOARD_BUT_PIN, INPUT);
 
-    while(!digitalRead(BOARD_BUT_PIN));
+    waitForButtonPress(0);
     SerialUSB.println("Starting Receive Test");
     SerialUSB.println("Format:");
     SerialUSB.println("\tFirst Byte, Num, Seq. Num, Errors\n\r");
 }
 
-int seq_num = 1;
-int errors = 0;
 void loop() {
+    static int seq_num = 1;
+    static int errors = 0;
     digitalWrite(BOARD_LED_PIN,LOW);
     
     /* read bytes out of the buffer one at a time */
