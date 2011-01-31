@@ -4,7 +4,6 @@
 
 #include "wirish.h"
 #include "usb.h"
-#include "sine.c"
 
 #define BOARD_LED_PIN 13
 #define BOARD_BUT_PIN 38
