@@ -1,6 +1,25 @@
 /*
  * Generate the THX Deep Note, in stereo, using two PWM outputs and 16 sawtooth
  * waves.
+ *
+ * To try this out yourself you will need:
+ *  * ~1K Resistors (for volume control), need 2
+ *  * A way to listen to audio from wires (a breadboardable headphone jack, 
+ *    or actual speakers with wires
+ *  
+ * Wire up your speakers/headphone jack to pins 25 and 26 on Maple Mini,
+ * put the 1K resistors in series with this connection to keep from blowing
+ * your ears off! A big speaker might not need the resistor. Dont forget to
+ * wire up the ground of your headphones/speakers to groun on Maple Mini!
+ *
+ * To use with Maple (not Maple Mini) change OUT0 and OUT1 to "6" and "7"
+ * and wire your speakers to those pins instead. This is because TIMER1,
+ * on which we have configured the PWM, connects to different pins on Maple
+ * and Maple Mini!
+ *
+ * See how many channels you can add before running out of processor power!
+ * The original Deep Note had 30! The current record for a Maple version is
+ * 25 (then the audio mixer cant keep up with the audio rate!)
  */
 
 
