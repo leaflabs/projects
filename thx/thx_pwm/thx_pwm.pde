@@ -222,5 +222,6 @@ void loop(void) {
     digitalWrite(BOARD_LED_PIN,HIGH);
     delay(100);
     digitalWrite(BOARD_LED_PIN,LOW);
+    delay(800);
 }
 
