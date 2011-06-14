@@ -99,7 +99,7 @@ void handler_t(void) {
     for (int i=0;i<HALF_CHANNELS;i++) {
         /* The left output is the first half of the synth channels and the
            right output is the second half. Each channel is a sawtooth wave
-           with amplitude MAX/NUM_CHANNELS */
+           with amplitude MAX/HALF_CHANNELS */
         synth[i].value = (synth[i].index % MAX_VAL)/HALF_CHANNELS;
         synth[i].index += synth[i].step;
 
