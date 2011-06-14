@@ -1,7 +1,6 @@
 #include "WProgram.h"
 
-typedef struct
-{
+typedef struct {
     int step;
     uint32 index;
     int value;
