@@ -18,7 +18,7 @@
 #define AUDIO_RATE    15     /* in microseconds */
 #define CONTROL_RATE  30000  /* in microseconds */
 #define NUM_CHANNELS  16
-
+#define HALF_CHANNELS (NUM_CHANNELS/2)
 
 #define LEN_START 300 /* multiply by CONTROL_RATE to get length of into */
 #define LEN_TRANS 300 /* length of transition to criscendo */
@@ -26,14 +26,14 @@
 /* The size of the values used to represent any audio/dsp math
 DONT use MAX_INT32 to give ourselves headroom and avoid clipping */
 #define AUDIO_BITS 31
-#define MAX_VAL (2 << AUDIO_BITS)
+#define MAX_VAL (1 << AUDIO_BITS)
 
 /* Use 8-bit pwm, since its very fast and we arnt filtering the output */
 #define PWM_BITS 8
 
 /* To convert the AUDIO_BITS audio samples into PWM_BITS output samples,
    divide by 2^(AUDIO_BITS-PWM_BITS) */
-#define OUTPUT_SCALE (2 << (AUDIO_BITS-PWM_BITS))
+#define OUTPUT_SCALE (1 << (AUDIO_BITS-PWM_BITS))
 
 /* The hand tuned values, like the starting and stopping frequencies of each
    synth channel and the number of channels set to each octave of the final
@@ -96,15 +96,15 @@ void handler_t(void) {
     int output_l = 0;
     int output_r = 0;
 
-    for (int i=0;i<NUM_CHANNELS/2;i++) {
+    for (int i=0;i<HALF_CHANNELS;i++) {
         /* The left output is the first half of the synth channels and the
            right output is the second half. Each channel is a sawtooth wave
            with amplitude MAX/NUM_CHANNELS */
-        synth[i].value = (synth[i].index % MAX_VAL)/NUM_CHANNELS;
+        synth[i].value = (synth[i].index % MAX_VAL)/HALF_CHANNELS;
         synth[i].index += synth[i].step;
 
-        int j = i+NUM_CHANNELS/2;
-        synth[j].value = (synth[j].index % MAX_VAL)/NUM_CHANNELS;
+        int j = i+HALF_CHANNELS;
+        synth[j].value = (synth[j].index % MAX_VAL)/HALF_CHANNELS;
         synth[j].index += synth[j].step;
 
         output_r += synth[i].value;
@@ -122,7 +122,8 @@ void handler_t(void) {
  * present across all of the synthesizer channels, and was setup by hand
  */
 int get_octave(int index) {
-    int i,sum;
+    int i;
+    int sum = 0;
     for (i=0; i<NUM_OCTAVES; i++) {
         sum += number_each_octave[i];
         if (index < sum) {
@@ -212,7 +213,12 @@ void setup(void) {
 
     Timer2.pause();
     Timer4.pause();
+    
     waitForButtonPress();
+    
+    /* setup the synths */
+    setup_synth(synth);
+    
     Timer2.resume();
     Timer4.resume();
 }
