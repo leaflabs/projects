@@ -39,7 +39,7 @@
 #define NUM_CHANNELS  16
 #define HALF_CHANNELS (NUM_CHANNELS/2)
 
-#define LEN_START 300 /* multiply by CONTROL_RATE to get length of into */
+#define LEN_START 300 /* multiply by CONTROL_RATE to get length of intro */
 #define LEN_TRANS 300 /* length of transition to criscendo */
 
 /* The size of the values used to represent any audio/dsp math
@@ -138,7 +138,7 @@ void handler_t(void) {
 }
 
 /* this function hand tunes how many of each destination octave should be
- * present across all of the synthesizer channels, and was setup by hand
+ * present across all of the synthesizer channels. num_each_octave is setup by hand
  */
 int get_octave(int index) {
     int i;
@@ -157,11 +157,8 @@ int get_octave(int index) {
 }
 
 void setup_synth(Channel *synth) {
-     /* setup roughly where the channels start and end.
-       todo generify against NUM_CHANNELS */
     int i;
 
-    /* all the constants are just hand tuned */
     for (i=0; i<NUM_CHANNELS; i++) {
         /* i%(NUM_CHANNELS/2) repeats our settings for the left and right
            sets of synths channels */
@@ -200,7 +197,7 @@ void setup(void) {
     pinMode(BOARD_BUTTON_PIN,INPUT);
     pinMode(BOARD_LED_PIN,OUTPUT);
 
-    // Setup output pwm pin (PWM_BITS pwm)
+    /* Setup output pwm pin (PWM_BITS pwm) */
     pinMode(OUT0,PWM);
     pinMode(OUT1,PWM);
     Timer1.setOverflow(2<<PWM_BITS);
@@ -208,7 +205,7 @@ void setup(void) {
     pwmWrite(OUT0,0);
     pwmWrite(OUT1,0);
 
-    // Setup Timer
+    /* Setup Timer */
     Timer2.setChannel1Mode(TIMER_OUTPUTCOMPARE);
 
     /* 0.0.11 IDE bug, setPeriod is no good */
@@ -226,9 +223,6 @@ void setup(void) {
     /* some random pin to grab a seed from */
     pinMode(AIN_SEED,INPUT_ANALOG);
     randomSeed(analogRead(AIN_SEED));
-
-    /* setup the synths */
-    setup_synth(synth);
 
     Timer2.pause();
     Timer4.pause();
