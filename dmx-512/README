@@ -1,0 +1,24 @@
+LeafLabs DMX-Maple Project
+
+  created by Brian Tovar, Rurik Primiani, Blake Rego
+  for LeafLabs Maple (tested on Maple RET6)
+  created  26 Jul 2011
+  modified 26 Aug 2011
+
+DMX-512 Project Summary:
+
+This project's goal is to provide a maple board with low-level functionality
+to communicate with DMX-512 capable hardware. This process uses several pins,
+configured as outputs, to drive channel data at 250kBaud. An auxiliary chip 
+is required to provide the differential signal (RS-485 format) required by 
+such devices. 
+
+Future Work:
+
+--A shield is currently in the design phase: schematics and layouts should be 
+posted at some point in the near future.
+
+--Work needs to be done to manipulate the functional code into an importable 
+header and C file in a generic form.
+
+--I would personally like to see a sine function as an initial test. 
