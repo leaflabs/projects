@@ -1,5 +1,5 @@
 /*
-  DMX Class for LeafLabs Maple 
+  DMX Test for LeafLabs Maple 
   (tested on a RET6)
  
   by Brian Tovar
@@ -11,17 +11,18 @@
 
 #include "dmx.h"
 
+Dmx test_dmx;
+
 void setup() {
   //pinMode(BOARD_LED_PIN, OUTPUT);  // use the on board led
-  SerialUSB.end();                 // just in case, prob not needed
-  dmx(3);
+  test_dmx.begin(3);
 }
 
 void loop() {
-  dmx.write();
-  delay(1000);
-  for(int i=0; i<dmx.NUM_OF_CHANNELS; i++) {
-    dmx.write(i, random(256) );
+  test_dmx.send();
+  delay(500);
+  for(int i=0; i<test_dmx.NUM_OF_CHANNELS; i++) {
+    test_dmx.write(i, random(256) );
   }
 }
 

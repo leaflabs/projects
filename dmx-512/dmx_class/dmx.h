@@ -26,13 +26,10 @@
 
 /*
   DMX Class for LeafLabs Maple 
-  (tested on a RET6)
  
   by Brian Tovar
   created  26 Aug 2011
   modified  6 Sep 2011
-  
-  NB: Be sure to use a 120-Ohm terminating resistor to prevent reflections
 */
 
 #ifndef _DMX_H_
@@ -53,11 +50,15 @@
 class Dmx {
 
   public:
-    Dmx(int n);
+    Dmx();
+    void begin(uint16);
+    void end(void); 
     void send(void);
     void write(int, uint8);
     uint16 NUM_OF_CHANNELS;
-  
+    // hack: global timer interrut handler.  See dmx.cpp if you're
+    // interested, but you should probably leave this alone.
+    friend void dmx_handler_wrapper(void);
   private:
     // make enum: DMX_TIMER_CHAN;
     uint8 DMX_RTS_PIN;

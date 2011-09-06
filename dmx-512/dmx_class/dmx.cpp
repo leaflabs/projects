@@ -26,13 +26,10 @@
 
 /*
   DMX Class for LeafLabs Maple 
-  (tested on a RET6)
  
   by Brian Tovar
   created  26 Aug 2011
   modified  6 Sep 2011
-  
-  NB: Be sure to use a 120-Ohm terminating resistor to prevent reflections
 */
 
 #include "dmx.h"
@@ -42,7 +39,12 @@
 #define END_OF_PACKET_BIT LOW
 #define DEBUG_LED 1
 
- Dmx::Dmx(int n) {
+// Hack for C++ type system distinction between pointer-to-function
+// and pointer-to-member-function
+static Dmx *activeInstance = NULL;
+void dmx_handler_wrapper(void);
+
+Dmx::Dmx() {
   // application specific constants (user-configurable)
   DMX_RTS_PIN = 36;
   DMX_TX1_PIN = 34;
@@ -51,25 +53,39 @@
   DMX_TIMER = TIMER2;
   DMX_TIMER_CH = TIMER_CH2;
   
-  // initializes class members and timer settings
-  NUM_OF_CHANNELS = n;             // number of channels = 3x number of lights
+  // initializes class variables and pin configurations
   bitBuffer = 0;                   // initialize bit buffer
+  SerialUSB.end(); 
   pinMode(DMX_RX1_PIN, INPUT);     // configure RX pin as input
   pinMode(DMX_TX1_PIN, OUTPUT);    // configure TX pin as output
   pinMode(DMX_RTS_PIN, OUTPUT);    // configure RTS pin as output
   pinMode(30, OUTPUT);             // temporary vcc for dmx breakout board
   digitalWrite(30, HIGH);          // vcc pin is 3.3v
   digitalWrite(DMX_RTS_PIN, HIGH); // RTS high for drive mode
+}
 
-  //initTimer(DMX_TIMER);
+void Dmx::begin(uint16 n) {
+  NUM_OF_CHANNELS = n;             // number of channels = 3x number of lights
+
+  // Turn off any other Dmx instances, just in case
+  activeInstance = NULL;
+  
+  // initializes timer configurations
   timer_pause(DMX_TIMER);
   timer_set_prescaler(DMX_TIMER, 1);
   timer_set_reload(DMX_TIMER, 288); // 4 us = 288 clock pulses @ 72MHz
   timer_generate_update(DMX_TIMER); // update new reload value
   timer_set_mode(DMX_TIMER, DMX_TIMER_CH, TIMER_OUTPUT_COMPARE);
   timer_set_compare(DMX_TIMER, DMX_TIMER_CH, 1); // test
-  timer_attach_interrupt(DMX_TIMER, TIMER_CC1_INTERRUPT, handler);
+  timer_attach_interrupt(DMX_TIMER, TIMER_CC1_INTERRUPT, dmx_handler_wrapper);
   timer_resume(DMX_TIMER);
+
+  // Make us the active Dmx instance
+  activeInstance = this;
+}
+
+void Dmx::end(void) {
+  activeInstance = NULL;
 }
 
 void Dmx::send(void) {
@@ -78,6 +94,15 @@ void Dmx::send(void) {
   this->c = 0;
   this->b = 0;
   timer_resume(DMX_TIMER);
+}
+
+void dmx_handler_wrapper(void) {
+    // Do nothing if we don't have an active Dmx instance
+    if (!activeInstance) {
+      return;
+    }
+    
+    activeInstance->handler();  
 }
 
 void Dmx::handler(void) {
