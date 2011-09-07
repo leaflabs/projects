@@ -11,7 +11,7 @@
 
 #include "dmx.h"
 
-Dmx test_dmx;
+DmxClass test_dmx;
 
 void setup() {
   //pinMode(BOARD_LED_PIN, OUTPUT);  // use the on board led
@@ -21,7 +21,7 @@ void setup() {
 void loop() {
   test_dmx.send();
   delay(500);
-  for(int i=0; i<test_dmx.NUM_OF_CHANNELS; i++) {
+  for(int i=0; i<test_dmx.number_of_channels; i++) {
     test_dmx.write(i, random(256) );
   }
 }

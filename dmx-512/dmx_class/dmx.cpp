@@ -41,133 +41,136 @@
 
 // Hack for C++ type system distinction between pointer-to-function
 // and pointer-to-member-function
-static Dmx *activeInstance = NULL;
+static DmxClass *activeInstance = NULL;
 void dmx_handler_wrapper(void);
 
-Dmx::Dmx() {
+DmxClass::DmxClass() {
   // application specific constants (user-configurable)
-  DMX_RTS_PIN = 36;
-  DMX_TX1_PIN = 34;
-  DMX_RX1_PIN = 32;
+  dmx_rts_pin = 36;
+  dmx_tx1_pin = 34;
+  dmx_rx1_pin = 32;
+  dmx_timer = TIMER2;
+  dmx_timer_ch = TIMER_CH2;
   // NB: timer device must have type  TIMER_ADVANCED or TIMER_GENERAL
-  DMX_TIMER = TIMER2;
-  DMX_TIMER_CH = TIMER_CH2;
   
   // initializes class variables and pin configurations
   bitBuffer = 0;                   // initialize bit buffer
-  SerialUSB.end(); 
-  pinMode(DMX_RX1_PIN, INPUT);     // configure RX pin as input
-  pinMode(DMX_TX1_PIN, OUTPUT);    // configure TX pin as output
-  pinMode(DMX_RTS_PIN, OUTPUT);    // configure RTS pin as output
+  pinMode(dmx_rx1_pin, INPUT);     // configure RX pin as input
+  pinMode(dmx_tx1_pin, OUTPUT);    // configure TX pin as output
+  pinMode(dmx_rts_pin, OUTPUT);    // configure RTS pin as output
+  digitalWrite(dmx_rts_pin, HIGH); // RTS high for drive mode
   pinMode(30, OUTPUT);             // temporary vcc for dmx breakout board
   digitalWrite(30, HIGH);          // vcc pin is 3.3v
-  digitalWrite(DMX_RTS_PIN, HIGH); // RTS high for drive mode
 }
 
-void Dmx::begin(uint16 n) {
-  NUM_OF_CHANNELS = n;             // number of channels = 3x number of lights
-
+void DmxClass::begin(uint16 n) {
+  number_of_channels = n; // red, green, and blue are independent channels
+  SerialUSB.end();
+  
   // Turn off any other Dmx instances, just in case
   activeInstance = NULL;
   
   // initializes timer configurations
-  timer_pause(DMX_TIMER);
-  timer_set_prescaler(DMX_TIMER, 1);
-  timer_set_reload(DMX_TIMER, 288); // 4 us = 288 clock pulses @ 72MHz
-  timer_generate_update(DMX_TIMER); // update new reload value
-  timer_set_mode(DMX_TIMER, DMX_TIMER_CH, TIMER_OUTPUT_COMPARE);
-  timer_set_compare(DMX_TIMER, DMX_TIMER_CH, 1); // test
-  timer_attach_interrupt(DMX_TIMER, TIMER_CC1_INTERRUPT, dmx_handler_wrapper);
-  timer_resume(DMX_TIMER);
+  timer_pause(this->dmx_timer);
+  timer_set_prescaler(this->dmx_timer, 1);
+  timer_set_reload(this->dmx_timer, 288); // 4 us = 288 clock pulses @ 72MHz
+  timer_generate_update(this->dmx_timer); // update new reload value
+  timer_set_mode(this->dmx_timer, dmx_timer_ch, TIMER_OUTPUT_COMPARE);
+  timer_set_compare(this->dmx_timer, dmx_timer_ch, 1); // test
+  timer_attach_interrupt(this->dmx_timer, TIMER_CC1_INTERRUPT, dmx_handler_wrapper);
+  timer_resume(this->dmx_timer);
 
-  // Make us the active Dmx instance
+  // Make this the active Dmx instance
   activeInstance = this;
 }
 
-void Dmx::end(void) {
+void DmxClass::end(void) {
   activeInstance = NULL;
+  SerialUSB.begin();
+  SerialUSB.println();
 }
 
-void Dmx::send(void) {
-  if (DEBUG_LED) { toggleLED(); }
-  this->h = 0;
-  this->c = 0;
-  this->b = 0;
-  timer_resume(DMX_TIMER);
+void DmxClass::send(void) {
+    if (DEBUG_LED) { toggleLED(); }
+    this->headerIndex = 0;
+    this->channelIndex = 0;
+    this->bitIndex = 0;
+    timer_resume(this->dmx_timer);
 }
 
 void dmx_handler_wrapper(void) {
     // Do nothing if we don't have an active Dmx instance
     if (!activeInstance) {
-      return;
+        return;
     }
     
     activeInstance->handler();  
 }
 
-void Dmx::handler(void) {
-  digitalWrite(DMX_TX1_PIN, bitBuffer);
-  if (c == NUM_OF_CHANNELS) {
-      timer_pause(DMX_TIMER);
-      bitBuffer = END_OF_PACKET_BIT;
-      if (DEBUG_LED) { toggleLED(); }
-  }
-  else if (h < SIZE_OF_HEADER) {
-    bitBuffer = header();
-    h++;
-  }
-  else {
-    switch ( b ) {
-        case 0:
-          bitBuffer = START_BIT;
-          b++;
-          break;
-        case 10:
-          bitBuffer = STOP_BIT;
-          b=0;
-          c++;
-          break;
-        case 9: 
-          bitBuffer = STOP_BIT;
-          b++;
-          break;
-        default: // channel data: cases 1 through 8
-          bitBuffer = bitRead(channel[c],b-1);
-          b++;
-          break;
-    } //end-of-switch
-  } // end-of-else
+void DmxClass::handler(void) {
+    digitalWrite(dmx_tx1_pin, this->bitBuffer);
+    if (this->channelIndex == number_of_channels) {
+        timer_pause(this->dmx_timer);
+        bitBuffer = END_OF_PACKET_BIT;
+        if (DEBUG_LED) { toggleLED(); }
+    }
+    else if (this->headerIndex < SIZE_OF_HEADER) {
+        //this->bitBuffer = this->header();
+        headerIndex++;
+    }
+    else {
+        switch ( this->bitIndex ) {
+            case 0:
+              bitBuffer = START_BIT;
+              bitIndex++;
+              break;
+            case 10:
+              bitBuffer = STOP_BIT;
+              bitIndex = 0;
+              channelIndex++;
+              break;
+            case 9: 
+              bitBuffer = STOP_BIT;
+              bitIndex++;
+              break;
+            default: // channel data: cases 1 through 8
+              bitBuffer = bitRead(this->channel[this->channelIndex], this->bitIndex - 1);
+              this->bitIndex++;
+              break;
+        }
+    }
 }
 
-void Dmx::write(int chan, uint8 value) {
-  channel[chan] = value;
+void DmxClass::write(int chan, uint8 value) {
+  this->channel[chan] = value;
 }
 
-uint8 Dmx::header(void) {
-  switch ( h ) {
-    case 0:
-      return 0; // BREAK (should be at least 22-bits long)                                   
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-      return 1; // MARK AFTER BREAK                                                                      
-    case 5:
-      return START_BIT; // START-BIT                                                                            
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13: 
-      return 0; // START CODE
-    case 14:
-    case 15:    
-      return STOP_BIT; // STOP-BIT
-    };
-}
+//uint8 DmxClass::header(void) {
+//    switch ( this->headerIndex ) {
+//        case 0:
+//          return END_OF_PACKET_BIT; // BREAK (should be at least 22-bits long)
+//          break;
+//        case 2:
+//        case 3:
+//        case 4:
+//          return 1; // MARK AFTER BREAK
+//        case 5:
+//          return START_BIT; // START-BIT
+//        case 6:
+//        case 7:
+//        case 8:
+//        case 9:
+//        case 10:
+//        case 11:
+//        case 12:
+//        case 13: 
+//          return 0; // START CODE
+//        case 14:
+//        case 15:
+//          return STOP_BIT; // STOP-BIT
+//    }
+//}
+
 
 // Declare the instance that the users of the library can use
-Dmx dmx;
+extern DmxClass Dmx;

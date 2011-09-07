@@ -25,12 +25,12 @@
  *****************************************************************************/
 
 /*
-  DMX Class for LeafLabs Maple 
- 
-  by Brian Tovar
-  created  26 Aug 2011
-  modified  6 Sep 2011
-*/
+ * DMX Class for LeafLabs Maple 
+ *
+ * by Brian Tovar
+ * created  26 Aug 2011
+ * modified  6 Sep 2011
+ */
 
 #ifndef _DMX_H_
 #define _DMX_H_
@@ -47,29 +47,28 @@
 #define SIZE_OF_HEADER 16
 
 // class definition for dmx lights
-class Dmx {
+class DmxClass {
 
   public:
-    Dmx();
+    DmxClass();
     void begin(uint16);
     void end(void); 
     void send(void);
     void write(int, uint8);
-    uint16 NUM_OF_CHANNELS;
+    uint16 number_of_channels;
     // hack: global timer interrut handler.  See dmx.cpp if you're
     // interested, but you should probably leave this alone.
     friend void dmx_handler_wrapper(void);
   private:
-    // make enum: DMX_TIMER_CHAN;
-    uint8 DMX_RTS_PIN;
-    uint8 DMX_TX1_PIN;
-    uint8 DMX_RX1_PIN;
-    uint8 DMX_TX2_PIN;
-    uint8 DMX_RX2_PIN;
-    timer_dev* DMX_TIMER;
-    timer_channel DMX_TIMER_CH;
+    uint8 dmx_rts_pin;
+    uint8 dmx_tx1_pin;
+    uint8 dmx_rx1_pin;
+    uint8 dmx_tx2_pin;
+    uint8 dmx_rx2_pin;
+    timer_dev* dmx_timer;
+    timer_channel dmx_timer_ch;
 
-    int h, c, b;
+    int headerIndex, channelIndex, bitIndex;
     uint8 volatile bitBuffer;
     uint8 channel[MAX_CHANNELS];
 
