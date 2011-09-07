@@ -39,10 +39,12 @@
 #define END_OF_PACKET_BIT LOW
 #define DEBUG_LED 1
 
+DmxClass DMX;
+
 // Hack for C++ type system distinction between pointer-to-function
 // and pointer-to-member-function
-static DmxClass *activeInstance = NULL;
-void dmx_handler_wrapper(void);
+DmxClass *activeInstance = NULL;
+void dmx_handler(void);
 
 DmxClass::DmxClass() {
   // application specific constants (user-configurable)
@@ -77,7 +79,7 @@ void DmxClass::begin(uint16 n) {
   timer_generate_update(this->dmx_timer); // update new reload value
   timer_set_mode(this->dmx_timer, dmx_timer_ch, TIMER_OUTPUT_COMPARE);
   timer_set_compare(this->dmx_timer, dmx_timer_ch, 1); // test
-  timer_attach_interrupt(this->dmx_timer, TIMER_CC1_INTERRUPT, dmx_handler_wrapper);
+  timer_attach_interrupt(this->dmx_timer, TIMER_CC1_INTERRUPT, dmx_handler); //dmx_handler_wrapper);
   timer_resume(this->dmx_timer);
 
   // Make this the active Dmx instance
@@ -85,7 +87,7 @@ void DmxClass::begin(uint16 n) {
 }
 
 void DmxClass::end(void) {
-  activeInstance = NULL;
+  //activeInstance = NULL;
   SerialUSB.begin();
   SerialUSB.println();
 }
@@ -98,16 +100,17 @@ void DmxClass::send(void) {
     timer_resume(this->dmx_timer);
 }
 
-void dmx_handler_wrapper(void) {
+void dmx_handler(void) {
     // Do nothing if we don't have an active Dmx instance
     if (!activeInstance) {
         return;
     }
-    
-    activeInstance->handler();  
+    else {
+        activeInstance->handlerMemberFn();
+    }
 }
 
-void DmxClass::handler(void) {
+void DmxClass::handlerMemberFn(void) {
     digitalWrite(dmx_tx1_pin, this->bitBuffer);
     if (this->channelIndex == number_of_channels) {
         timer_pause(this->dmx_timer);
@@ -171,6 +174,3 @@ void DmxClass::write(int chan, uint8 value) {
 //    }
 //}
 
-
-// Declare the instance that the users of the library can use
-extern DmxClass Dmx;
