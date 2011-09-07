@@ -46,17 +46,18 @@
 #define MAX_CHANNELS 512 // to save program memory, reduce this number
 #define SIZE_OF_HEADER 16
 
-static const uint8 HEADER[SIZE_OF_HEADER] = {
-    0, // BREAK (should be longer, going to assume space btwn packets)
-    1, 1, 1, 1, // MARK AFTER BREAK
-    0, // START BIT
-    0, 0, 0, 0, 0, 0, 0, 0, // START CODE
-    1, 1, // STOP BITs
-};
+//static const uint8 HEADER[SIZE_OF_HEADER] = {
+//    0, // BREAK (should be longer, going to assume space btwn packets)
+//    1, 1, 1, 1, // MARK AFTER BREAK
+//    0, // START BIT
+//    0, 0, 0, 0, 0, 0, 0, 0, // START CODE
+//    1, 1, // STOP BITs
+//};
+
+void dmx_handler_hack(void);
 
 // class definition for dmx lights
 class DmxClass {
-
   public:
     DmxClass();
     void begin(uint16);
@@ -64,9 +65,7 @@ class DmxClass {
     void send(void);
     void write(int, uint8);
     uint16 number_of_channels;
-    // hack: global timer interrut handler.  See dmx.cpp if you're
-    // interested, but you should probably leave this alone.
-    friend void dmx_handler(void);
+    void handler(void);
     
   private:
     uint8 dmx_rts_pin;
@@ -81,7 +80,6 @@ class DmxClass {
     uint8 volatile bitBuffer;
     uint8 channel[MAX_CHANNELS];
     uint8 header(void);
-    void handlerMemberFn(void);
 };
 
 // Declare the instance that the users of the library can use
