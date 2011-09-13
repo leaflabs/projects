@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>PyMite String Objects</title>
+<meta name="author" content="Dean Hall" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left{
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: left }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="pymite-string-objects">
+<h1 class="title">PyMite String Objects</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Dean Hall</td></tr>
+<tr class="field"><th class="docinfo-name">Id:</th><td class="field-body">StringObjects.txt 207 2007-04-22 05:22:29Z dwhall</td>
+</tr>
+</tbody>
+</table>
+<!-- Copyright 2007 Dean Hall
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is in the file docs/LICENSE. -->
+<div class="section" id="purpose">
+<h1>Purpose</h1>
+<p>This document describes the String object as used in the PyMite virtual machine
+(VM).  In doing so, it serves as a design document for the PyMite developer
+and a reference for the PyMite user.</p>
+</div>
+<div class="section" id="overview">
+<h1>Overview</h1>
+<p>PyMite shall define the C data type <tt class="docutils literal">PmString_t</tt> as the general type for
+the String object used by the VM.  String objects are used routinely throughout
+the VM and character strings are often passed between the VM and native code in
+both directions.  The design of the String object is important both inside and
+outside the VM.</p>
+</div>
+<div class="section" id="background">
+<h1>Background</h1>
+<p>The author has a history with the <a class="reference external" href="http://en.wikipedia.org/wiki/J2ME">J2ME</a> VM, inside which strings did not have
+null terminators.  The author ported J2ME to a number of platforms whose string
+routines required null terminators.  For these platforms, the solution was to
+copy the contents of the VM string to a buffer and append a null character.
+This solution slowed the resulting system and added to its memory requirements.</p>
+</div>
+<div class="section" id="object-details">
+<h1>Object Details</h1>
+<p>The <tt class="docutils literal">PmString_t</tt> data type shall represent a PyMite String object and shall
+contain an object descriptor, an unsigned  16-bit integer to represent the
+string's length and a variable number of bytes to contain the contents of the
+string itself.  The bytes that make up the string shall have at least one null
+character '\0' (0x00) following the last intended character.  Python String
+objects may intentionally contain any number of null characters, so in the
+byte representation of the String object, a null character does not always
+imply the end of the character array.</p>
+<p>String objects are of dynamic length.  A string's maximum length is limited by
+the heap implementation.  As of this writing (2007/04), the maximum heap chunk
+size is 1020 bytes.  Up to eight bytes are used by the <tt class="docutils literal">PmString_t</tt> on 32-bit
+systems.  Subtract a null terminator and PyMite strings can be a maximum of 1011
+characters.  However, when using Interactive PyMite (ipm), a string is packaged
+inside a code object and that code object must fit within the maximum chunk
+size.  So the effective string length in ipm is smaller than 1011.</p>
+<p>In the <tt class="docutils literal">PmString_t</tt> data type, a character array field is declared.  Since
+C type declarations must be of constant size and an array of zero characters is
+not allowed by some compilers, this field is declared as an array of one
+character.  This has a nice side effect that when creating a String object,
+the length of the string is added to the size of the <tt class="docutils literal">PmString_t</tt> struct.
+The &quot;extra&quot; byte in the resulting size holds the null terminator.</p>
+<p>In Python, String objects are used to represent names.  Object linking is not
+necessary in Python because name lookup is used to access external modules,
+global variables and other objects.  This means that there are often two
+instances of every String object: one in the provider object and one in
+the user object.  A String object caching mechanism is implemented as a compile
+time option.  The String object cache shall conserve heap memory by having all
+instances of an identical String object refer to one common String object.</p>
+<p>PyMite used to declare support for international character sets using UTF-8
+character strings.  This is no longer true.  PyMite only supports 8-bit ASCII
+characters.</p>
+</div>
+<div class="section" id="design-decisions">
+<h1>Design Decisions</h1>
+<p>Inside the VM, string objects are used very often as are the numerical length
+of those strings.  I chose to use a field to store the string's length as an
+optimization so that the string's length does not need to be measured every time
+the length is needed.  However, I do not intend for the string's length to be
+used to determine where the character array ends.</p>
+<p>The String object shall have a null character at the end of the array
+of characters.  This is done so that PyMite string objects are compatible with
+general C string libraries and can avoid the troubles explained above in
+<a class="reference internal" href="#background">Background</a>.  Note that Python String objects can contain null characters
+anywhere within the string and this may cause C string libraries to not work
+properly on those String objects.</p>
+<p>The choice to add a String object cache was easy.  Without it, PyMite exhausts
+a 4 KiB heap during system start-up before any user code is executed.</p>
+<p>PyMite dropped the goal of supporting UTF-8 characters because there was never
+a demand for UTF-8 support from a user and the complication of UTF-8 support
+does not justify its exestince.</p>
+<!-- :mode=rest: -->
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>The PyMite Heap Design</title>
+<meta name="author" content="Dean Hall" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left{
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: left }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="the-pymite-heap-design">
+<h1 class="title">The PyMite Heap Design</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Dean Hall</td></tr>
+<tr class="field"><th class="docinfo-name">Id:</th><td class="field-body">HeapDesign.txt 222 2007-06-05 00:15:04Z dwhall</td>
+</tr>
+</tbody>
+</table>
+<!-- Copyright 2006 Dean Hall
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is in the file docs/LICENSE. -->
+<div class="section" id="purpose">
+<h1>Purpose</h1>
+<p>This document describes the design of the memory heap for the PyMite project.
+In doing so, it serves as a design document for the PyMite developers.</p>
+</div>
+<div class="section" id="overview">
+<h1>Overview</h1>
+<p>PyMite shall use a contiguous block of RAM for the virtual machine's
+memory heap.  All of PyMite's dynamic memory comes from the heap.  An API
+shall be provided to allocate and free chunks and perform other operations
+with the heap.  The heap's internal implementation shall be transparent
+to the user.  A mark-sweep garbage collector is used to reclaim allocated
+chunks that are no longer in use by the VM.</p>
+</div>
+<div class="section" id="design">
+<h1>Design</h1>
+<p>PyMite uses a statically declared, contiguous block of RAM as the memory heap
+to avoid using memory allocation functions such as <tt class="docutils literal">malloc()</tt> which vary
+from one embedded target library to another.</p>
+<p>Memory from the heap is rendered to the caller in chunks.  A chunk is simply
+a contiguous block of memory with an object descriptor at the top of the chunk.
+The object descriptor contains information about the chunk that is used by the
+heap as well as the PyMite virtual machine.  When the caller requests a chunk
+of a certain size, the heap adds extra space to the chunk to allow for the
+object descriptor.  A chunk has minimum and maximum size limits.  The minimum
+chunk size is equivalent to the size of the heap descriptor type.  Since the
+size of a heap descriptor varies with the target device, the value for the
+minimum chunk size is platform depedent.  The size field in the object
+descriptor indicates the size of the chunk, but not directly.  That means,
+a value of 0x10 in the size field does not necessarily mean the chunk is 16
+bytes in size.  The actual meaning of the size field depends on the
+implementation.</p>
+<p>The PyMite VM uses dynamic memory from the heap during operation to hold
+objects.  The VM must keep a reference to a chunk for it to be able to use
+the object in that chunk.  When the VM no longer needs an object it may
+explicitly free the chunk containing the object or it may simply erase the
+reference to the object.  In the latter case, the garbage collector
+is responsible for finding and reclaiming objects that are no longer in use.
+A reclaimed chunk can be overwritten an re-used for future chunk requests.</p>
+</div>
+<div class="section" id="interface">
+<h1>Interface</h1>
+<p>The public API, <tt class="docutils literal">heap_getChunk()</tt>, shall be provided to allocate a chunk of
+memory from the heap.  This API will return an error code in its return value
+if a suitable chunk cannot be provided or some other error occurs.  If the
+return value indicates succes, a pointer to a chunk of memory is returned by
+reference.  This chunk shall have its size field set and its size shall be the
+requested size or larger.  Some 32-bit target devices require addresses of
+items to be even multiples of four bytes.  So the implementation of
+<tt class="docutils literal">heap_getChunk()</tt> rounds up the requested chunk size to the next even multiple
+of four.  This results in a small amout of wasted memory (internal
+fragmentation).</p>
+<p>The public API, <tt class="docutils literal">heap_freeChunk()</tt>, shall be provided to return a chunk of
+memory to the heap.  This API will return an error code in its return value
+if an error occurs.  At this time, there are no known ways an error can occur.
+This API should only be used if the chunk being returned is known, for certain,
+to no longer be in use by the VM.  If it is not known whether a chunk is in
+use or not, the programmer should do nothing and allow the garbage collector
+to reclaim unused chunks.</p>
+<p>The garbage collector is activated automatically when, chunk allocation fails
+inside <tt class="docutils literal">heap_getChunk()</tt>.  The garbage collector reclaims chunks that are
+no longer being used by the VM and makes them available for allocation.
+Inside <tt class="docutils literal">heap_getChunk()</tt> a second attempt to allocate a chunk is made after
+garbage collection is complete.  If this second attempt fails, an OutOfMemory
+exception is raised; otherwise, the newly allocated chunk is returned by
+reference.</p>
+</div>
+<div class="section" id="implementation">
+<h1>Implementation</h1>
+<p>This paragraph explains the memory allocation policy used by the heap.
+The allocator shall use a Best-Fit algorithm to allocate chunks from the heap.
+The Best-Fit algorithm is chosen because research shows that when it is
+combined with coalescing reclamation, fragmentation is reduced to
+insignificance <a class="citation-reference" href="#johnstone1998" id="id1">[Johnstone1998]</a>.  Furthermore, Best-Fit is chosen because
+the cost of scanning the free list of PyMite's small heap is bounded.</p>
+<p>After the heap is initialized, all available memory is in one big chunk
+in the free list.  However, after the VM operates for some time, the free list
+contains multiple free chunks.  These chunks shall be kept in a doubly-linked
+list ordered by their size, from small to large.
+If a best fit chunk is not available, an exact fit chunk is carved from the
+largest chunk.</p>
+<p>Chunks are added to the free list by an explicit call to <tt class="docutils literal">heap_freeChunk()</tt>
+or during the sweep phase of the garbage collector.  When a chunk is added to
+the free list by <tt class="docutils literal">heap_freeChunk()</tt>, it is not coalesced with neighboring
+chunks even if they are not in use.  Instead, the chunk is just inserted into
+the free list.  That chunk will be coalesced the next time the garbage collector
+runs.  This method of lazy coalescing leaves the chunk in the free list
+which allows an opportunity for the chunk to be re-used without the cost
+of coalescing and splitting.  Garbage collection occurs when no chunks of
+suitable size are available, which is an appropriate time to perform coalescing.</p>
+<table class="docutils citation" frame="void" id="johnstone1998" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[Johnstone1998]</a></td><td>&quot;The Memory Fragmentation Problem: Solved?&quot;,
+M. S. Johnstone and P. R. Wilson,
+<em>International Symposium on Memory Management</em>,
+Oct. 1998.</td></tr>
+</tbody>
+</table>
+<div class="section" id="heap-chunk-duality">
+<h2>Heap Chunk Duality</h2>
+<p>A memory chunk can take two forms throughout the execution of the PyMite VM.
+When a chunk is allocated and in use, it uses the object descriptor struct,
+<tt class="docutils literal">PmObjDesc_t</tt>, to store important operational details.  This is accomplished
+by declaring <tt class="docutils literal">PmObjDesc_t</tt> at the head of every PyMite object structure.
+However, when that same chunk is deallocated and in the free list, it uses
+the heap descriptor struct, <tt class="docutils literal">PmHeapDesc_t</tt>, so that a larger value can be
+stored in the size field.  When a chunk is not in use, the type field and GC
+mark bit are no longer needed and are not present in the heap descriptor.
+The <tt class="docutils literal">PmHeapDesc_t</tt> structure also has one or more pointers used to create
+the free list.</p>
+</div>
+<div class="section" id="the-object-descriptor">
+<h2>The Object Descriptor</h2>
+<p>Care is taken to keep the object descriptor as small as possible.  PyMite's
+object descriptor uses only two bytes.  The object desriptor has four fields:
+the size field (9 bits), the GC mark bit, the free bit and the object type
+(5-bits) field.</p>
+<p>The size field connotes the size of the chunk.  The size field is multiplied
+by four to get the actual size of the chunk.  The GC mark bit is used by the
+mark-sweep garbage collector.  The free bit indicates to the garbage
+collector's sweep phase when an object is free and available to be coalesced.
+The free bit is not strictly necessary, but having it eliminates the need to
+change the GC mark bit of all objects in the free list during garbage collection.
+The type field is used by the PyMite VM to denote the type of object in this
+chunk.</p>
+<p>The following is a diagram of the object descriptor at the head of a chunk:</p>
+<pre class="literal-block">
+          MSb          LSb
+          7 6 5 4 3 2 1 0
+pchunk-&gt; +-+-+-+-+-+-+-+-+     S := od_size: Size of the chunk (2 LSbs dropped)
+         |     S[9:2]    |     F := od_free: free bit
+         +-+-+---------+-+     M := od_gcval: GC Mark bit
+         |F|M|    T    |S|     T := od_type: Object type (language specific)
+         +-+-+---------+-+
+         | object data   |
+         ...           ...
+         | end data      |     Theoretical min size == 2
+         +---------------+     Effective min size == 8
+</pre>
+<p>This paragraph explains what happens when a chunk is allocated.  A chunk is
+allocated with a requested size, that size is bumped up to the
+next multiple of four to accomodate 4-byte alignment on some 32-bit platforms.
+The chunk's size field is set to the effective size (divided by 4).
+The free bit is cleared so that the GC knows this chunk is in use during the
+sweep phase.  The GC mark bit is set to the current GC mark, so the object
+doesn't accidently survive the next garbage collection cycle.
+The type field is left alone (the caller will set the object type).
+If this chunk is carved from the front of a larger chunk, the remainder
+chunk's heap descriptor must be created: the size field is set to the reduced
+size and the free bit is set.</p>
+</div>
+<div class="section" id="the-heap-descriptor">
+<h2>The Heap Descriptor</h2>
+<p>Since the heap descriptor is used in chunks that are not active and do not use
+the contents of the chunk, the heap descriptor is larger than the object
+descriptor.  PyMite's heap descriptor uses two bytes and two pointers.  Since
+pointer sizes vary on 8, 16 and 32-bit platforms, the size of the heap
+descriptor is platform dependent.  The heap desriptor has two fields:
+the size field (14 bits) and the free bit.  One bit is reserved for future
+use.</p>
+<p>The size field connotes the size of the chunk.  The size field is multiplied
+by four to get the actual size of the chunk.  Since chunks that are not in use
+may be as large as the entire heap, the size field is made larger than the one
+in the object descriptor.  However, the same trick of not storing the two LSbs
+is used.  Instead of having a GC mark bit, the heap descriptor uses the free
+bit to tell the GC that this chunk is not in use.  This means all chunks in the
+free list do not need to be marked during the mark phase of the GC.
+The free bit indicates to the garbage collector's sweep phase when an object
+is free and available to be coalesced.</p>
+<p>The heap descriptor also contains two pointers, prev and next.  These pointers
+are used to form the doubly-linked list of free chunks.</p>
+<p>The following is a diagram of the heap descriptor at the head of a chunk:</p>
+<pre class="literal-block">
+          MSb          LSb
+          7 6 5 4 3 2 1 0
+pchunk-&gt; +-+-+-+-+-+-+-+-+
+         |     S[9:2]    |     S := hd_size: Size of the chunk (2 LSbs dropped)
+         +-+-+-----------+     F := hd_free: free bit
+         |F|R| S[15:10]  |     R := hd_reserved: Bit reserved for future use
+         +-+-+-----------+
+         |     P(L)      |     P := hd_prev: Pointer to previous node
+         |     P(H)      |     N := hd_next: Pointer to next node
+         |     N(L)      |
+         |     N(H)      |     Theoretical min size == 6
+         +---------------+     Effective min size == 8 (12 on 32-bit MCUs)
+         | unused space  |
+         ...           ...
+         | end chunk     |
+         +---------------+
+</pre>
+<p>This paragraph explains what happens when a chunk is deallocated.  A chunk is
+deallocated in one of two ways.  A chunk can be explicitly deallocated by a
+call to <tt class="docutils literal">heap_freeChunk()</tt>.  In this case, the chunk's free bit is set
+and the chunk is inserted into the free list without being coalesced.  The chunk
+may be coalesced later during the sweep phase of garbage collection.  The
+heaps's available size is updated to include the free chunk.</p>
+<p>A chunk may also be implicitly deallocated by the garbage collector.  If a
+chunk is not reachable from the roots list during a GC cycle, that chunk is no
+longer being actively used by the VM and is deallocated.  In this case, the
+chunk's free bit is set and the chunk is possibly coalesced with free
+neighbor chunks during the sweep phase of the GC.  The coalesced chunk is
+inserted into the free list.  The heaps's available size is updated to include
+the free chunk.</p>
+</div>
+</div>
+<div class="section" id="garbage-collection">
+<h1>Garbage Collection</h1>
+<p>Garbage collection is the process of reclaiming memory chunks that are no longer
+in use by the virtual machine.  PyMite uses a mark-sweep style garbage
+collector as opposed to a reference counting collector so that the programmer
+does not have to manually account for object use in native code.</p>
+<p>The garbage collector is activated when a request for a memory chunk is made
+and cannot be fulfilled because no chunk of suitable size is available.
+When the garbage collector is activated, the activity in the PyMite virtual
+machine stops.  Garbage collection begins with the mark phase of the mark-
+sweep collector.  The heap toggles a global bit that is used to represent the
+&quot;marked&quot; state.  Then, starting from the known root objects, the garbage
+collector recursively marks all objects that are reachable.  Remaining objects
+that were not marked now have a stale value in their object descriptor's GC mark
+field.  After all reachable objects are marked, the sweep phase of the collector
+begins.</p>
+<p>The sweep phase of the garbage collector starts at the base of the heap and
+proceeds sequentially through memory.  Each object that is free or whose GC
+mark field is stale is reclaimed.  Neighboring free chunks are coalesced into
+a single larger chunk.  Reclaimed chunks are inserted into the free list.
+Coalesced chunks, because their size has changed, must be removed and
+reinserted in the free list in order to maintain sorted order.
+A doubly linked list is used to make list removal and insertion easier.</p>
+<p>A special case arises when the GC activates when the interpreter is executing
+native code.  In this case, newly-allocated objects could be collected because
+they have not yet linked to their final object which would make it reachable
+from the roots list.  To prevent this from happening, objects that are
+allocated in a native code session are given a GC mark value that will
+allow that object to survive the next run of the GC.  Furthermore, the GC uses
+a counter variable in the native frame to prevent the GC from running twice
+while in one native code session.  These two implementation-specific features
+combine to prevent objects allocated in native code from being collected should
+the GC run later during that same native session.  If the case arises that the
+GC activates twice during one native code session, an out of memory exception
+is raised.</p>
+</div>
+<div class="section" id="conclusion">
+<h1>Conclusion</h1>
+<p>PyMite includes its own dynamic memory allocation system that is based on a
+static block of RAM called the heap.  The heap allocates and reclaims chunks
+of memory to and from the PyMite VM during runtime.  Memory chunks are
+constrained in size and can be explicitly freed when no longer needed.
+Garbage collection is performed when needed.  The garbage collector coalesces
+neighboring chunks that, when combined with the Best-Fit allocator policy
+reduces fragmentation in the heap.</p>
+<!-- Algorithm to allocate a chunk
+
+pchunk = heap.freelist
+
+# Skip to the first chunk that holds the requested size
+while pchunk != NULL and PM_GET_SIZE(pchunk) < requestedSize:
+    pchunk = pchunk->next
+
+if pchunk == NULL: return failure
+
+heap_unlinkFromFreelist(pchunk)
+
+# Check if a chunk can be carved from what is available
+if PM_GET_SIZE(pchunk) - requestedSize >= PM_HEAP_MIN_CHUNK_SIZE:
+    remainderChunk = pchunk + requestedSize
+
+    # Create the object descriptor for the remainder chunk
+    PM_SET_FREE(remainderChunk, 1)
+    PM_SET_SIZE(remainderChunk, PM_GET_SIZE(pchunk) - requestedSize)
+    PM_SET_SIZE(pchunk, requestedSize)
+
+    heap_linkToFreelist(remainderChunk)
+
+heap.avail -= PM_GET_SIZE(pchunk)
+return pchunk -->
+<!-- Algorithm to coalesce during sweep:
+
+pchunk = heap.base[0]
+while (pchunk < heap.base[HEAP_SIZE]):
+
+    # Skip to the next unmarked or free chunk
+    while(not PM_GET_FREE(pchunk)
+          and (PM_GET_GCMARK(pchunk) == heap.gc_mark)):
+        pchunk += PM_GET_SIZE(pchunk)
+
+    # Accumulate the chunk's size of all consecutive unmarked or free chunks
+    totalchunksize = PM_GET_SIZE(pchunk)
+    additionalheapsize = 0
+    pnext = pchunk
+
+    # Coalesce all contiguous free chunks
+    while(PM_GET_FREE(pnext) or
+          (!PM_GET_FREE(pnext) and PM_GET_GCMARK(pchunk) != heap.gc_mark)):
+
+        totalchunksize += PM_GET_SIZE(pnext)
+
+        if PM_GET_FREE(pnext):
+            heap_unlinkFromFreelist(pnext)
+
+        else:
+            PM_SET_FREE(pnext, 1)
+            additionalheapsize += PM_GET_SIZE(pnext)
+
+        pnext += PM_GET_SIZE(pnext)
+        if (pnext >= heap.base[HEAP_SIZE]): break
+
+    # Set the chunk's free bit
+    PM_SET_FREE(pchunk, 1)
+
+    # Set this chunk's size
+    PM_SET_SIZE(pchunk, totalchunksize)
+
+    heap_linkToFreelist(pchunk)
+
+    # Continue to the next chunk
+    pchunk += totalchunksize -->
+<!-- :mode=rest: -->
+</div>
+</div>
+</body>
+</html>

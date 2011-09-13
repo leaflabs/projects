@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>The Assert Statement</title>
+<meta name="author" content="Dean Hall" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left{
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: left }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="the-assert-statement">
+<h1 class="title">The Assert Statement</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Dean Hall</td></tr>
+<tr class="field"><th class="docinfo-name">Id:</th><td class="field-body">AssertStatement.txt 410 2010-01-18 22:46:12Z dwhall256</td>
+</tr>
+</tbody>
+</table>
+<!-- Copyright 2006 Dean Hall
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is in the file docs/LICENSE. -->
+<div class="section" id="purpose">
+<h1>Purpose</h1>
+<p>This document describes the implementation and use of the assert statement
+in the PyMite virtual machine (VM).  In doing so, it serves as a design
+document for the PyMite developer and a user manual for the PyMite user.</p>
+</div>
+<div class="section" id="overview">
+<h1>Overview</h1>
+<p>PyMite shall support the simple form of <a class="reference external" href="http://docs.python.org/ref/assert.html">assert statements</a> and may support
+the extended form.  The assert statement is useful in unit tests for the
+PyMite VM itself and is thus worth implementing.  The assert statement
+inherently depends on having exceptions available.  When an assertion fails,
+an <tt class="docutils literal">AssertionError</tt> exception is raised.  To read about exceptions in
+PyMite, see <a class="reference external" href="ErrorsAndExceptions.html">ErrorsAndExceptions</a>.</p>
+</div>
+<div class="section" id="background">
+<h1>Background</h1>
+<p>A simple example assert statement looks like this:</p>
+<pre class="literal-block">
+assert arg != None
+</pre>
+<p>The above line of code compiles to the following bytecode in Python 2.4:</p>
+<pre class="literal-block">
+&gt;&gt;&gt; co = compile(&quot;assert arg != None&quot;,&quot;fn&quot;,&quot;single&quot;)
+&gt;&gt;&gt; dis.disco(co)
+  1           0 LOAD_NAME                0 (arg)
+              3 LOAD_CONST               0 (None)
+              6 COMPARE_OP               3 (!=)
+              9 JUMP_IF_TRUE             7 (to 19)
+             12 POP_TOP
+             13 LOAD_GLOBAL              2 (AssertionError)
+             16 RAISE_VARARGS            1
+        &gt;&gt;   19 POP_TOP
+             20 LOAD_CONST               0 (None)
+             23 RETURN_VALUE
+</pre>
+<p>All of the bytecodes listed above exist in PyMite release 02 except for
+<tt class="docutils literal">RAISE_VARARGS</tt>.  The <tt class="docutils literal">RAISE_VARARGS</tt> bytecode is described <a class="reference external" href="http://www.python.org/dev/doc/maint24/lib/bytecodes.html">here</a>
+in these words:</p>
+<pre class="literal-block">
+RAISE_VARARGS    argc
+    Raises an exception. argc indicates the number of parameters to the
+    raise statement, ranging from 0 to 3. The handler will find the
+    traceback as TOS2, the parameter as TOS1, and the exception as TOS.
+</pre>
+</div>
+<div class="section" id="implementation">
+<h1>Implementation</h1>
+<p>The Python compiler changed the way it generates bytecode for the <tt class="docutils literal">assert</tt>
+statement in Python 2.4.  Prior to 2.4, Python looked to the <tt class="docutils literal">__debug__</tt> name
+to determine if assert code should be executed.  After 2.4, the compiler
+includes the code in the assert block by default or excludes it if <tt class="docutils literal"><span class="pre">-O</span></tt>
+optimization is turned on.  The implementation that handles <tt class="docutils literal">assert</tt>
+statements in PyMite requires that the user compile the application source
+code with Python 2.4 or later.  Since PyMite system and unit tests use the
+assert statement, using Python 2.4 or later shall be a requirement for
+building PyMite.</p>
+<p>To support the <tt class="docutils literal">assert</tt> statement a built-in named <tt class="docutils literal">AssertionError</tt> must
+exist and the <tt class="docutils literal">RAISE_VARARGS</tt> (1) bytecode must be implemented.  Since
+revision 369 (2009/05/20), <tt class="docutils literal">AssertionError</tt> is an actual class that inherits
+from the Exception class.  Prior to r369, <tt class="docutils literal">AssertionError</tt> was its own
+exception datatype.  The <tt class="docutils literal">AssertionError</tt> object also has an integer
+attribute, <tt class="docutils literal">code</tt>, that corresponds to the value of the PmReturn_t code that
+represents  that exception.  In this case, <tt class="docutils literal">PM_RET_EX_ASSRT</tt>.  So, the code
+added to <tt class="docutils literal">__bi.py</tt> looks like this:</p>
+<pre class="literal-block">
+class AssertionError(Exception):
+    pass
+AssertionError.code = 0xE4
+</pre>
+<p>The first step to support <tt class="docutils literal">RAISE_VARARGS</tt> is to make <tt class="docutils literal">pmImgCreator.py</tt>
+aware that this bytecode is supported.  Then, the bytecode implementation shall
+do the following:</p>
+<blockquote>
+<ul class="simple">
+<li>pop the top of the stack and expect an exception object (OBJ_TYPE_EXN).</li>
+<li>push the None object as the traceback</li>
+<li>push the None object as the parameter (???)</li>
+<li>push the exception object</li>
+</ul>
+</blockquote>
+<p>The above steps will get the stack ready for any exception handling if it is
+present.  The &quot;try/except&quot; structure that would setup exception handling
+is not yet supported in PyMite, but it may be in the future.</p>
+<p>Finally, tests shall be written to exercise the <tt class="docutils literal">assert</tt> statement.
+Full testing would require &quot;try/except&quot; support to catch expected exceptions,
+so that shall have to wait.</p>
+<!-- :mode=rest: -->
+</div>
+</div>
+</body>
+</html>

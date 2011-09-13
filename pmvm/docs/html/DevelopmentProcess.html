@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>PyMite Development Process</title>
+<meta name="author" content="Dean Hall" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left{
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: left }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="pymite-development-process">
+<h1 class="title">PyMite Development Process</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Dean Hall</td></tr>
+<tr class="field"><th class="docinfo-name">Id:</th><td class="field-body">DevelopmentProcess.txt 493 2010-06-06 16:23:09Z dwhall256</td>
+</tr>
+</tbody>
+</table>
+<!-- Copyright 2006 Dean Hall
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is in the file docs/LICENSE. -->
+<div class="section" id="purpose">
+<h1>Purpose</h1>
+<p>This document describes the process used to make changes to files in the
+Python-on-a-Chip project.  In doing so, it serves as a how-to manual for the
+developer and can be ignored by the user.</p>
+<p>This document is incomplete and subject to change.  Please suggest improvements.</p>
+</div>
+<div class="section" id="overview">
+<h1>Overview</h1>
+<p>Software quality is enhanced when the project developers consistently
+employ a defined software process.  The process should enhance the development
+of the software and not burden it.  This process is a typical branch-based
+development process that uses <a class="reference external" href="http://subversion.apache.org/">Subversion</a> and <a class="reference external" href="http://code.google.com/">Google Code</a>.
+If this document does not explain your question, please ask on the <a class="reference external" href="http://groups.google.com/group/python-on-a-chip">maillist</a>.
+Since long process documents often go unread, this document is as concise as
+possible.</p>
+<p>Here is a brief description of the process:</p>
+<blockquote>
+<ol class="arabic simple">
+<li><a class="reference internal" href="#create-an-issue">Create an Issue</a></li>
+<li><a class="reference internal" href="#do-the-work">Do the Work</a></li>
+<li><a class="reference internal" href="#link-commits-and-messages">Link Commits and Messages</a></li>
+<li><a class="reference internal" href="#keep-in-sync-with-trunk">Keep in Sync with Trunk</a></li>
+<li><a class="reference internal" href="#run-tests">Run tests</a></li>
+<li><a class="reference internal" href="#post-for-review">Post for Review</a></li>
+<li><a class="reference internal" href="#merge-to-trunk">Merge to trunk</a></li>
+</ol>
+</blockquote>
+</div>
+<div class="section" id="create-an-issue">
+<h1>Create an Issue</h1>
+<p><a class="reference external" href="http://code.google.com/p/python-on-a-chip/issues/entry">Create a new issue</a> to capture and document enhancments and defects.</p>
+<p>The following table explains what to enter in the fields when creating an issue:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="45%" />
+<col width="41%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Field</th>
+<th class="head">What to enter</th>
+<th class="head">Example</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>Summary</td>
+<td>Short sentence <em>starting with verb</em>
+that explains the issue</td>
+<td>Enable compiler warnings as
+errors</td>
+</tr>
+<tr><td>Description</td>
+<td>A longer explanation of the problem
+possibly with example code that
+exercises or exposes the issue.</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>Status</td>
+<td>If you want it, leave it as
+Accepted.  Otherwise clear the box.</td>
+<td>Accepted</td>
+</tr>
+<tr><td>Owner</td>
+<td>If you want it, take it.  Otherwise
+leave it blank.</td>
+<td>dwhall256</td>
+</tr>
+<tr><td>Labels</td>
+<td>Select the proper label-type from
+the three that are given: Type,
+Priority and Component.</td>
+<td>Type-Defect
+Priority-Medium
+Component-pmvm</td>
+</tr>
+</tbody>
+</table>
+<p>The <cite>Summary</cite> field is often copied into the release notes' change log, with
+the opening verb changed to the past tense.  Conceive your <cite>Summary</cite> from that
+point of view.  The <cite>Milestone-</cite> label is used by the project manager to know
+what issues should be resolved for what releases.  Leave out the <cite>Milestone</cite>
+label unless you've been told to do otherwise.  Select the most appropriate
+component from the <cite>Component-</cite> list.  Even if the resolution touches more
+than one component, select the one that applies best.</p>
+</div>
+<div class="section" id="do-the-work">
+<h1>Do the Work</h1>
+<p>The developer must first obtain a local copy of the code.
+If the work only involves a small change, or a similar small change across
+many files, then the work can be done on a working copy of <tt class="docutils literal">trunk/</tt>:</p>
+<pre class="literal-block">
+svn co https://python-on-a-chip.googlecode.com/svn/trunk/ --userid YourUserId
+</pre>
+<p>If there are more than a few changes, make a branch to work in and check
+out a local copy:</p>
+<pre class="literal-block">
+svn cp https://python-on-a-chip.googlecode.com/svn/trunk/ \
+       https://python-on-a-chip.googlecode.com/svn/branches/issue_0NNN_userid_brief_description \
+       -m &quot;Issue #NNN: creating branch for work&quot;
+svn co https://python-on-a-chip.googlecode.com/svn/branches/issue_0NNN_userid_brief_description --userid YourUserId
+</pre>
+<p>If the work involved is a defect, the developer should create the smallest
+test possible that exposes the defect.  This regression test should be added
+to the project's automated test system:</p>
+<pre class="literal-block">
+svn add src/test/system/tNNN.c src/test/system/tNNN.py
+</pre>
+<p>If the work required a significant architectural change,
+a document should be created which explains the design of the work.
+This document should be composed in <a class="reference external" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> and
+added to the project's automated documentation build system <tt class="docutils literal">docs/src/</tt>:</p>
+<pre class="literal-block">
+svn add docs/src/NewDocumentTitle.txt
+</pre>
+</div>
+<div class="section" id="link-commits-and-messages">
+<h1>Link Commits and Messages</h1>
+<p>Every time the developer commits code to either trunk or his branch,
+he should add a commit message such as the following which lets Google Code
+hyperlink the commit to the issue:</p>
+<pre class="literal-block">
+svn ci -m &quot;Issue #NNN: checking in on branch&quot;
+</pre>
+<p>or:</p>
+<pre class="literal-block">
+svn ci -m &quot;Issue #NNN: mainlining directly&quot;
+</pre>
+<p>Then, the developer should describe the changes in a new comment in the issue.
+The developer should prefix this comment with the revision number
+that resulted from the commit action, like so:</p>
+<pre class="literal-block">
+rYYY: Fixed a null pointer in src/vm/interp.c
+</pre>
+<p>Where <tt class="docutils literal">YYY</tt> is the number of the revision that resulted from the check-in.
+These two little text snippets create a precise two-way linkage between the
+physical changes to the code and the aggregated notes of an issue,
+resulting in a documented process that is easy for others to follow.</p>
+</div>
+<div class="section" id="keep-in-sync-with-trunk">
+<h1>Keep in Sync with Trunk</h1>
+<p>While doing the work, if the trunk is updated, you should merge those changes
+into your branch so that your working copy is always up-to-date.  Doing this
+merge-forward step avoids the problem of when you mainline your branch and your
+changes don't work with the modified trunk.  If you are working on a local
+copy of trunk/, then staying synced is easy: just use the command:</p>
+<pre class="literal-block">
+svn update
+</pre>
+<p>Pay attention to the output of this command to see if there are conflicts that
+must be resolved.</p>
+<p>If you are working on a branch, there are two ways to stay in sync with trunk/.
+Merging trunk to your local copy and then commiting your branch is recommended:</p>
+<pre class="literal-block">
+svn merge http://python-on-a-chip.googlecode.com/svn/trunk/ .
+svn ci -m &quot;Issue #NN merging trunk to branch&quot;
+</pre>
+</div>
+<div class="section" id="run-tests">
+<h1>Run Tests</h1>
+<p>The project has an automated test system that is run by typing the following
+from the root of the project:</p>
+<pre class="literal-block">
+make check
+</pre>
+<p>These tests must pass before an issue may be mainlined, but passing
+these tests is not the only qualification for mainlining.
+If the work done impacted any of the project source code, then testing should
+also be performed on the relevant desktop and target platforms.  If the issue
+describes a defect, then you should already have a test in the automated test
+system, so that test will be run by <tt class="docutils literal">make check</tt>.</p>
+</div>
+<div class="section" id="post-for-review">
+<h1>Post for Review</h1>
+<div class="note">
+<p class="first admonition-title">Note</p>
+<p class="last">The Google Code review process should NOT be used.</p>
+</div>
+<p>After the developer does the work, syncs to the trunk and runs the tests,
+he posts the changes for review.  If the changes were few and the developer
+made the changes on a local copy of trunk, then he should create a patch file
+like so:</p>
+<pre class="literal-block">
+svn diff &gt; issueNNN.patch
+</pre>
+<p>He should send an email to the <a class="reference external" href="http://groups.google.com/group/python-on-a-chip">p14p developer mailling list</a> and attach
+the patch file.</p>
+<p>If the changes were many and the developer worked on a branch, then
+the developer must ensure that every commit he made is mentioned, via the
+rYYY syntax, in the issue.  This way, the developer can simply send the URL
+of his issue to the maillist for review:</p>
+<pre class="literal-block">
+http://code.google.com/p/python-on-a-chip/issues/detail?id=NNN
+</pre>
+<p>Reviewers give polite and professional feedback to the developer within
+48 hours or provide an estimate of how much longer it will take to review
+the changes.</p>
+<p>The developer applies all the feedback and re-tests the branch.</p>
+</div>
+<div class="section" id="merge-to-trunk">
+<h1>Merge to Trunk</h1>
+<p>Merging to <tt class="docutils literal">trunk/</tt> happens after the change-set is reviewed, feedback is
+integrated and the tests pass.  Ensure the branch is in sync with trunk,
+per the section above.  Then revert to a clean copy of trunk:</p>
+<pre class="literal-block">
+svn switch https://python-on-a-chip.googlecode.com/svn/trunk/
+</pre>
+<p>Merge your branch into the working copy of trunk:</p>
+<pre class="literal-block">
+svn merge https://python-on-a-chip.googlecode.com/svn/branches/issue_0NNN_userid_brief_description .
+</pre>
+<p>Build, test and verify the modified working copy, then commit it to the trunk:</p>
+<pre class="literal-block">
+svn ci -m &quot;Issue #NNN: mainlining branch issue_0NNN_userid_brief_description&quot;
+</pre>
+<p>Add a comment to the issue:</p>
+<pre class="literal-block">
+rYYY: merged branch to trunk
+</pre>
+<p>and set the <tt class="docutils literal">Status</tt> field to Fixed.</p>
+<p>Finally, announce that the issue is fixed on the mailling list.</p>
+<!-- :mode=rest: -->
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>How to Use PyMite</title>
+<meta name="author" content="Dean Hall" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left{
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: left }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="how-to-use-pymite">
+<h1 class="title">How to Use PyMite</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Dean Hall</td></tr>
+<tr class="field"><th class="docinfo-name">Id:</th><td class="field-body">HowToUsePyMite.txt 317 2009-03-17 02:25:27Z dwhall</td>
+</tr>
+</tbody>
+</table>
+<!-- Copyright 2006 Dean Hall
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is in the file docs/LICENSE. -->
+<div class="section" id="purpose">
+<h1>Purpose</h1>
+<p>This document describes how to use the high-level PyMite API
+to run a user module.  In doing so, it helps the developer
+write system tests and the user write a PyMite application.</p>
+</div>
+<div class="section" id="overview">
+<h1>Overview</h1>
+<p>PyMite shall provide a high-level API that makes it easy to use the
+virtual machine (VM).  In most cases, one must write the application
+in Python and a small <tt class="docutils literal">main()</tt> in C that uses the high-level API.
+After the sources are written, the Python application is converted
+to an image using <tt class="docutils literal">pmImgCreator</tt> and the image is compiled with the
+user's C code and linked to the PyMite VM library, <tt class="docutils literal">libpmvm.a</tt>.
+The build process is explained in greater detail in <a class="reference external" href="BuildSystem.html">BuildSystem</a>.</p>
+</div>
+<div class="section" id="pymite-example">
+<h1>PyMite Example</h1>
+<p>This section demonstrates how a trivial program is written to run
+in the PyMite VM.  An example can be found in the PyMite source tree in
+<tt class="docutils literal">src/platform/desktop/</tt>.</p>
+<p>First write the Python application, <tt class="docutils literal">trivial.py</tt> that will run in the VM:</p>
+<pre class="literal-block">
+def funcname(n):
+    return n-42
+
+print funcname(6*7)
+</pre>
+<p>Notice that an application in PyMite does not use the
+<tt class="docutils literal">if __name__ == &quot;__main__&quot;:</tt> convention that Python does;
+also note that the program written above will run on a desktop Python VM.</p>
+<p>The next step is to create a C file that will run this program in the PyMite VM.
+The following C program will do exactly that:</p>
+<pre class="literal-block">
+#include &quot;pm.h&quot;
+
+extern unsigned char usrlib_img[];
+
+int main(void)
+{
+    PmReturn_t retval;
+
+    retval = pm_init(MEMSPACE_PROG, usrlib_img);
+    PM_RETURN_IF_ERROR(retval);
+
+    retval = pm_run((uint8_t *)&quot;trivial&quot;);
+    return (int)retval;
+}
+</pre>
+<p>Since not all Python programmers are familiar with C, I will explain the program
+above line by line.  The <tt class="docutils literal">include</tt> statement brings many PyMite definitions
+such as <tt class="docutils literal">pm_init()</tt>, <tt class="docutils literal">pm_run()</tt>, and <tt class="docutils literal">MEMSPACE_PROG</tt> into the namespace
+of this file.  The <tt class="docutils literal">extern</tt> line tells the compiler that the variable
+<tt class="docutils literal">usrlib_img[]</tt> is defined in another file.  Next the <tt class="docutils literal">main()</tt> function
+means this program will run as the primary executable.</p>
+<p>Inside <tt class="docutils literal">main()</tt> the <tt class="docutils literal">retval</tt> variable is declared.  It is used to catch
+any error codes that might come from the PyMite API functions.
+Next, the call to <tt class="docutils literal">pm_init()</tt> initializes the VM and tells it where to find
+the images of the user application.  In our case, the <tt class="docutils literal">trivial.py</tt> Python
+program was turned into <tt class="docutils literal">trivial_img.c</tt> and <tt class="docutils literal">trivial_nat.c</tt>
+by the tool <tt class="docutils literal">pmImgCreator</tt>.
+Inside <tt class="docutils literal">trivial_img.c</tt> is where one finds the variable <tt class="docutils literal">usrlib_img[]</tt>
+which contains the <cite>image</cite> of our application (the equivalent of a <tt class="docutils literal">.pyc</tt>
+file).  Our application does not have any native code, but <tt class="docutils literal">trivial_nat.c</tt>
+is still needed because it defines an empty function table that needs to be
+linked to the VM.  The macro <tt class="docutils literal">PM_RETURN_IF_ERROR()</tt> does what its name
+suggests.</p>
+<p>The next PyMite API, <tt class="docutils literal">pm_run()</tt> tries to execute the module with the same
+name as the string you give to the function.  Here we tell the VM to find
+the module, <tt class="docutils literal">trivial</tt> and run it.  Behind the scenes, the module is loaded
+from its image into a structure in RAM and bytecodes are executed until program
+completion or an unhandled exception occurs.</p>
+<!-- :mode=rest: -->
+</div>
+</div>
+</body>
+</html>

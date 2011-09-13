@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>Frequently Asked Questions</title>
+<meta name="author" content="Dean Hall" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left{
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: left }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="frequently-asked-questions">
+<h1 class="title">Frequently Asked Questions</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Dean Hall</td></tr>
+<tr class="field"><th class="docinfo-name">Id:</th><td class="field-body">FrequentlyAskedQuestions.txt 317 2009-03-17 02:25:27Z dwhall</td>
+</tr>
+</tbody>
+</table>
+<!-- Copyright 2009 Dean Hall
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is in the file docs/LICENSE. -->
+<div class="section" id="purpose">
+<h1>Purpose</h1>
+<p>This document lists common questions and their answers that people new to PyMite
+ask.  In doing so, it is intended for new users and programmers.</p>
+</div>
+<div class="section" id="questions">
+<h1>Questions</h1>
+<ol class="arabic simple">
+<li><a class="reference internal" href="#what-is-pymite">What is PyMite?</a></li>
+<li><a class="reference internal" href="#under-what-terms-is-pymite-licensed">Under what terms is PyMite licensed?</a></li>
+<li><a class="reference internal" href="#is-a-ready-to-go-solution-available">Is a ready-to-go solution available?</a></li>
+<li><a class="reference internal" href="#how-do-i-get-pymite-running">How do I get PyMite running?</a></li>
+<li><a class="reference internal" href="#what-microcontrollers-are-supported">What microcontrollers are supported?</a></li>
+<li><a class="reference internal" href="#what-microcontroller-is-recommended">What microcontroller is recommended?</a></li>
+<li><a class="reference internal" href="#what-do-i-need-on-my-computer">What do I need on my computer?</a></li>
+</ol>
+</div>
+<div class="section" id="answers">
+<h1>Answers</h1>
+<div class="section" id="what-is-pymite">
+<h2>What is PyMite?</h2>
+<p>PyMite is a flyweight Python interpreter written from scratch to execute
+on 8-bit and larger microcontrollers with resources as limited as 64 KB of
+program memory (flash) and 4 KB of RAM. PyMite supports a subset of
+the Python 2.5 syntax and can execute a subset of the Python 2.5 bytecodes.
+PyMite can also be compiled, tested and executed on a desktop computer.</p>
+</div>
+<div class="section" id="under-what-terms-is-pymite-licensed">
+<h2>Under what terms is PyMite licensed?</h2>
+<p>PyMite is offered under one of two licenses: commercial or open source.
+The GNU Public License version 2.0 is the open source license.
+Please <a class="reference external" href="http://www.deanandara.com/">contact the author</a> for terms of the commercial license.</p>
+</div>
+<div class="section" id="is-a-ready-to-go-solution-available">
+<h2>Is a ready-to-go solution available?</h2>
+<p>Not yet.</p>
+</div>
+<div class="section" id="how-do-i-get-pymite-running">
+<h2>How do I get PyMite running?</h2>
+<p>Download PyMite from <a class="reference external" href="http://pymite.python-hosting.com/">http://pymite.python-hosting.com/</a> and follow the
+instructions in the README to build and run PyMite on the desktop.</p>
+<p>Read <a class="reference external" href="BuildSystem.html">BuildSystem</a> to learn how to build PyMite for a microcontroller target.
+To compile and flash PyMite to a microcontroller is highly dependent on which
+microcontroller you have.  I cannot answer this for you.  You'll have to find
+out how to do this for your specific target microcontroller.</p>
+</div>
+<div class="section" id="what-microcontrollers-are-supported">
+<h2>What microcontrollers are supported?</h2>
+<p>There are two sample projects in the source tree.  One for an 8-bit Atmel
+ATmega103 (but any AVR/ATmega with 4 KB RAM or more will do) and one for
+the 32-bit Atmel AT91SAM7S64 running on the AT91SAM7S-EK evaluation board.</p>
+</div>
+<div class="section" id="what-microcontroller-is-recommended">
+<h2>What microcontroller is recommended?</h2>
+<p>PyMite is so easy to port (there are 4 functions to adapt, see examples in
+the src/vm/plat directory) that any microcontroller with 8 KB or more of RAM
+will do.  I recommend 8 KB or more of RAM because 4 KB is rather tight and
+doesn't allow much more than simple programs.</p>
+</div>
+<div class="section" id="what-do-i-need-on-my-computer">
+<h2>What do I need on my computer?</h2>
+<p>Python 2.5 or 2.6.  Python 3.0 is not yet tested, so avoid it for now.
+You'll need gcc to compile for the desktop, avr-gcc for AVR, arm-elf-gcc for
+AT91SAM7S, etc.  If your OS is a version of Windows, I recommend using <a class="reference external" href="http://www.cygwin.com/">Cygwin</a>
+so you have a Unix-like terminal to run make and gcc.</p>
+<!-- :mode=rest: -->
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.6: http://docutils.sourceforge.net/" />
+<title>PyMite Closures</title>
+<meta name="author" content="Dean Hall" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5951 2009-05-18 18:03:10Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left{
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: left }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="pymite-closures">
+<h1 class="title">PyMite Closures</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Author:</th>
+<td>Dean Hall</td></tr>
+<tr class="field"><th class="docinfo-name">Id:</th><td class="field-body">Closures.txt 404 2010-01-08 22:04:42Z dwhall256</td>
+</tr>
+</tbody>
+</table>
+<!-- Copyright 2010 Dean Hall
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is in the file docs/LICENSE. -->
+<div class="section" id="purpose">
+<h1>Purpose</h1>
+<p>This document describes the design and implementation of closures used in the
+PyMite virtual machine (VM).  In doing so, it serves as a design document for
+the PyMite developer and a reference for the PyMite user.</p>
+</div>
+<div class="section" id="overview">
+<h1>Overview</h1>
+<p>Simply put, a <a class="reference external" href="http://en.wikipedia.org/wiki/Closure_(computer_science)">closure</a> allows you to define a function with &quot;free&quot; variables
+that are not a part of the function's local scope, but instead reference
+variables from a surrounding namespace.  The CPython implementation
+introduced closures in version 2.2 via <a class="reference external" href="http://www.python.org/dev/peps/pep-0227/">PEP 227</a>.  <a class="reference external" href="http://code.google.com/p/python-on-a-chip/issues/detail?id=56">Issue #256</a> implements
+closures in the PyMite VM.  This implementation involves changes to the code
+image structure as well has some internal VM structures and the addition of
+four new bytecodes.</p>
+</div>
+<div class="section" id="details">
+<h1>Details</h1>
+<p>The following paragraphs describe how closures work in chronological order of
+the lifetime of a program.</p>
+<p>Source code containing a nested function with free variables is detected by
+the CPython compiler.  A function containing variables referenced by nested
+functions is given a tuple of strings that name the <strong>cellvars</strong>.  A nested
+function with free variables is given a tuple of strings that name the
+<strong>freevars</strong>.  The CPython compiler also uses the appropriate bytecodes
+to manipulate freevars and cellvars.</p>
+<p>When the resulting program is executed and the outer function is executed
+via the <tt class="docutils literal">CALL_FUNCTION</tt> bytecode, the VM copies variables from the function's
+locals (including function arguments) into extra space in the frame designed
+to hold the callvars.  This extra space is located between the local variables
+and the stack in the frames &quot;locals plus&quot; field.  The <tt class="docutils literal">LOAD_DEREF</tt> and
+<tt class="docutils literal">STORE_DEREF</tt> bytecodes load and store stack references from/in cellvars.</p>
+<p>The outer function then uses the <tt class="docutils literal">LOAD_CLOSURE</tt> bytecodes to load cellvars
+onto the stack where they are bundled into a tuple.  Then the <tt class="docutils literal">MAKE_CLOSURE</tt>
+bytecode builds a function from the code object on the stack and gives the
+function a reference to the tuple of cellvars, thus creating a closure.
+The outer function may finish executing and its frame may be destroyed,
+but the references to the closure variables is maintained by the closure tuple.</p>
+<p>Later in the program when the inner function (the closure) is called, the
+<tt class="docutils literal">CALL_FUNCTION</tt> bytecode detects that the function is a closure and copies
+the object references from the tuple into the function's new frame's
+freevars (which is also located after the local variables and before the stack).</p>
+</div>
+<div class="section" id="design-decisions">
+<h1>Design Decisions</h1>
+<p>The PyMite VM always tries to find smaller ways of implementing Python.
+As such, the following paragraphs explain some changes to the way CPython
+implements closures.</p>
+<p>The first hurdle to overcome is that the <strong>cellvars</strong> and <strong>freevars</strong> tuples
+of strings would greatly increase the size of the code images.  So, instead
+of doing variable lookup by name, variable lookup is done by index.
+When the <tt class="docutils literal">pmImgCreator.py</tt> script processes Python source code to turn it
+into an image, the <strong>cellvars</strong> tuple of strings is turned into a tuple of
+integers.  Those integers let the <tt class="docutils literal">CALL_FUNCTION</tt> bytecode know where to
+find the variable to copy into the cellvar.</p>
+<p>The <strong>freevars</strong> tuple is a different matter.  It turns out, the strings in
+the freevars tuple aren't necessary, only the number of freevars is needed
+by <tt class="docutils literal">CALL_FUNCTION</tt> to know how many closures to copy from the closure tuple.
+So, instead of a <strong>freevars</strong> tuple, the code image has a <strong>nfreevars</strong> byte
+to indicate the number of freevars.</p>
+<p>The other way to reduce memory consuption was to eliminate the extra &quot;cell&quot;
+datatype that CPython uses to hold a reference to an object.  The design of
+the PyMite VM just did not require such a container for the reference.  Instead,
+regular object references are used.  This has the additional beneficial side
+effect of making the <tt class="docutils literal">LOAD_CLOSURE</tt> and <tt class="docutils literal">LOAD_DEREF</tt> bytecode
+implementations identical (saving code space).</p>
+<p>The result of the above changes is an implementation of statically nested
+functions with the ability to reference variables that are in the scope
+of the enclosing namespace.  The resulting ability to make closures creates
+a powerful tool for the programmer.</p>
+</div>
+<div class="section" id="example-use">
+<h1>Example Use</h1>
+<p>The following Python source code demonstrates the utility of a closure.
+In this example, we imagine that the programmer wants to define a function
+that is called as a callback function by the system.  In this imaginary example,
+the <tt class="docutils literal">callback_table</tt> holds a reference to all the callback functions.</p>
+<pre class="literal-block">
+callback_table = {}
+HOOK_ADC = 1003
+
+def setHook(event):
+    def _sh(f):
+        callback_table[event] = f
+        return f
+    return _sh
+
+&#64;setHook(HOOK_ADC)
+def onAdcReady():
+    pass
+</pre>
+<p>The setHook function accepts an event argument which tells in what slot the
+callback function should be stored.  Inside setHook we se a nested function,
+_sh, which stores the function in the callback table and returns the function.
+This lets setHook behave as a decorator.  The last three lines show setHook
+being used as a decorator with a parameter and the definition of the callback
+function.  In this example, the body is empty; the programmer may replace the
+pass statement with whatever code he needs to process the results of an
+analog-to-digital conversion.</p>
+<p>In the code example above, setHook has one cellvar named event and _sh has one
+freevar named event.</p>
+<!-- :mode=rest: -->
+</div>
+</div>
+</body>
+</html>
