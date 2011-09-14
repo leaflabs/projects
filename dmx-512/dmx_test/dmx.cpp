@@ -25,17 +25,14 @@
  *****************************************************************************/
 
 /*
-  DMX Class for LeafLabs Maple 
- 
-  by Brian Tovar
-  created  26 Aug 2011
-  modified  6 Sep 2011
-*/
+ * DMX Class for LeafLabs Maple 
+ *
+ * by Brian Tovar
+ * created  26 Aug 2011
+ * modified 14 Sep 2011
+ */
 
 #include "dmx.h"
-
-DmxClass DMX;
-//usart_dev DMX_USART_DEV;
 
 DmxClass::DmxClass() {
   // initializes class variables and pin configurations
@@ -54,10 +51,12 @@ void DmxClass::begin(uint16 n) {
     else {
         this->channel_count = n; }
     // NB: red, green, and blue are independent channels
+    usart_set_baud_rate(DMX_USART_DEV, 72, 250000);
     usart_enable(DMX_USART_DEV);
     DMX_USART_DEV->regs->CR1 &= !USART_CR1_M;
     DMX_USART_DEV->regs->CR2 |= USART_CR2_STOP_BITS_2;
-    usart_set_baud_rate(DMX_USART_DEV, 72, 250000);
+    //usart_set_baud_rate(DMX_USART_DEV, 72, 250000);
+    //usart_enable(DMX_USART_DEV);
 }
 
 void DmxClass::end(void) {
@@ -65,20 +64,19 @@ void DmxClass::end(void) {
 }
 
 void DmxClass::send(void) {
-    if (DEBUG_LED) { digitalWrite(BOARD_LED_PIN, HIGH); }
+    if (DEBUG_LED) { toggleLED(); }
     // Set the TE bit in USART_CR1 to send an idle frame as first transmission. <opt>
     // Wake from idle: USART_CR1 Bit4 IDLEIE:IDLEinterruptenable
     digitalWrite(DMX_BRK_PIN, HIGH);
     delayMicroseconds(16);
     pinMode(DMX_BRK_PIN, INPUT);
-    usart_putc(DMX_USART_DEV, 0);
+    //usart_putc(DMX_USART_DEV, 0);
     usart_tx(DMX_USART_DEV, this-> channel, this->channel_count);
     pinMode(DMX_BRK_PIN, OUTPUT);
     digitalWrite(DMX_BRK_PIN, LOW);
-    delay(200);
-    if (DEBUG_LED) { 
-        delay(200);
-        digitalWrite(BOARD_LED_PIN, LOW); }
+    delay(20);
+    if (DEBUG_LED) { toggleLED(); }
+    usart_reset_rx(DMX_USART_DEV);
 }
 
 void DmxClass::write(uint16 chan, uint8 value) {
@@ -88,3 +86,4 @@ void DmxClass::write(uint16 chan, uint8 value) {
         this->channel[chan] = value; }
 }
 
+//DmxClass DMX;

@@ -1,15 +1,16 @@
 /*
-  DMX Test Program
- 
-  by Brian Tovar, Rurik Primiani, Blake Rego
-  for LeafLabs Maple (tested on Maple RET6)
-  created  26 Jul 2011
-  modified 26 Aug 2011
-  
-  NB: Be sure to use a 120 Ohm terminating resistor to prevent reflections
-*/
+ * DMX Test Program
+ *
+ * by Brian Tovar
+ * created  26 Aug 2011
+ * modified 14 Sep 2011
+ *
+ * NB: Be sure to use a 120 Ohm terminating resistor to prevent reflections
+ */
 
 #include "dmx.h"
+
+DmxClass DMX;
 
 void setup() {
     SerialUSB.begin();
@@ -17,10 +18,9 @@ void setup() {
 }
 
 void loop() {
-  for(int i=0; i<DMX.channel_count; i++) {
-      DMX.write(i, random(256));
-  }
-  DMX.send();
-  if (!DEBUG_LED) { delay(200); }
-  delay(800);
+    for(int i=0; i<DMX.channel_count; i++) {
+        DMX.write(i, random(256));
+    }
+    DMX.send();
+    delay(480);
 }

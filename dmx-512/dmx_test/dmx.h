@@ -29,7 +29,7 @@
  *
  * by Brian Tovar
  * created  26 Aug 2011
- * modified  6 Sep 2011
+ * modified 14 Sep 2011
  */
 
 #ifndef _DMX_H_
