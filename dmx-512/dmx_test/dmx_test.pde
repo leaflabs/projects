@@ -12,21 +12,15 @@
 #include "dmx.h"
 
 void setup() {
-  pinMode(DMX_RX1_PIN, INPUT);
-  pinMode(DMX_TX1_PIN, OUTPUT);
-  pinMode(DMX_RTS_PIN, OUTPUT);
-  pinMode(30, OUTPUT);             // temporary vcc for dmx breakout
-  digitalWrite(30, HIGH);          // vcc
-  digitalWrite(DMX_RTS_PIN, HIGH); // RTS high for drive mode
-  pinMode(BOARD_LED_PIN, OUTPUT);  // use the on board led
-  SerialUSB.end();                 // just in case, prob not needed
-  timer_dmx_setup();
+    SerialUSB.begin();
+    DMX.begin(3);
 }
 
 void loop() {
-  write_dmx_packet();
-  delay(1000);
-  for(int i=0; i<NUM_OF_CHANNELS; i++) {
-    channel[i] = random(256); 
+  for(int i=0; i<DMX.channel_count; i++) {
+      DMX.write(i, random(256));
   }
+  DMX.send();
+  if (!DEBUG_LED) { delay(200); }
+  delay(800);
 }
