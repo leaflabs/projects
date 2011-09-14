@@ -13,7 +13,8 @@
 */
 
 #include "wirish.h"
-//#include "pm.h"
+#include "pmvm.h"
+#include "../../vm/pm.h"
 
 extern unsigned char usrlib_img[];
 // Force init to be called *first*, i.e. before static object allocation.
@@ -23,20 +24,17 @@ __attribute__((constructor)) void premain() {
 }
 
 
-int
-main(void)
-{
-/*
+int main(void){
+
+
     PmReturn_t retval;
+	//initialize everything behind pmvm
+	PMVM pmvm = PMVM();
 
-    // Init PyMite
-    retval = pm_init(MEMSPACE_PROG, usrlib_img);
-    PM_RETURN_IF_ERROR(retval);
+	//let pm initialize everything
+	retval = pm_init(MEMSPACE_PROG, usrlib_img);
+	PM_RETURN_IF_ERROR(retval);
 
-    // Run the sample program
-    retval = pm_run((uint8_t *)"main");
-
-
-    return (int)retval;
-	*/
+	retval = pm_run((uint8_t *) "main");
+	return (int) retval;
 }

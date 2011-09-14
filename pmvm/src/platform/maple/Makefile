@@ -9,9 +9,28 @@ PM_LIB_PATH := ../../vm/$(PM_LIB_FN)
 #PM_USR_SOURCES = main.py ../../lib/avr.py
 PMIMGCREATOR := ../../tools/pmImgCreator.py
 PMGENPMFEATURES := ../../tools/pmGenPmFeatures.py
-
+PMSTDLIB_SOURCES = 	../../lib/list.py \
+					../../lib/dict.py \
+					../../lib/__by.py \
+					../../lib/sys.py  \
+					../../lib/string.py
 
 IPM=true
+
+#ifeq ($(IPM, true)
+#	PMSTDLIB_SOURCES += ../../lib/ipm.py
+#endif
+
+#SOURCE_IMG 	:= pmstdlib_img.c
+#SOURCE_NAT 	:= pmstdlib_nat.c
+
+#ARFLAGS 	=  rcs
+#SOURCES 	=  $(wildcard *.c) $(SOURCE_IMG) $(SOURCE_NAT)
+#OBJECTS 	=  $(SOURCES:.c=.o)
+#INDENT 		:= $(call pathsearch, indent)
+
+
+
 
 PM_INC := -I../../vm
 CINCS = $(PM_INC) -I$(abspath .) 
@@ -236,6 +255,6 @@ jtag:
 doxygen:
 	doxygen $(SUPPORT_PATH)/doxygen/Doxyfile
 
-CFLAGS := $(GLOBAL_CFLAGS)
+ALL_CFLAGS := $(GLOBAL_CFLAGS)
 
-export PM_LIB_FN CC OBJCOPY NM CFLAGS AR IPM LDFLAGS PM_FLAGS
+export PM_LIB_FN CC OBJCOPY NM ALL_CFLAGS AR IPM LDFLAGS PM_FLAGS
