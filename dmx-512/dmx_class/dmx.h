@@ -77,7 +77,7 @@ class DmxClass {
     timer_channel dmx_timer_ch;
 
     int headerIndex, channelIndex, bitIndex;
-    uint8 volatile bitBuffer;
+    uint8 bitBuffer;
     uint8 channel[MAX_CHANNELS];
     uint8 header(void);
 };

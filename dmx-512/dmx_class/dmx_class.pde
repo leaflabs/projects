@@ -25,8 +25,8 @@ void setup() {
 }
 
 void loop() {
+    waitForButtonPress();
     DMX.send();
-    SerialUSB.println("sent packet");
     delay(1000);
     for(int i=0; i<DMX.number_of_channels; i++) {
         DMX.write(i, random(256));

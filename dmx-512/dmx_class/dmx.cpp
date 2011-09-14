@@ -64,6 +64,7 @@ DmxClass::DmxClass() {
 }
 
 void DmxClass::begin(uint16 n) {
+  SerialUSB.println("DMX begin");
   this->number_of_channels = n; // red, green, and blue are independent channels
   //SerialUSB.end();
   
@@ -86,6 +87,7 @@ void DmxClass::end(void) {
 }
 
 void DmxClass::send(void) {
+    SerialUSB.println("DMX send");
     if (DEBUG_LED) { toggleLED(); }
     this->headerIndex = 0;
     this->channelIndex = 0;
@@ -99,21 +101,27 @@ void DmxClass::handler(void) {
         timer_pause(this->dmx_timer);
         this->bitBuffer = END_OF_PACKET_BIT;
         if (DEBUG_LED) { toggleLED(); }
+        SerialUSB.println("end of packet");
     }
     else if (this->headerIndex < SIZE_OF_HEADER) {
+        SerialUSB.print(headerIndex, DEC);
         this->bitBuffer = this->header();
         headerIndex++;
+        if (headerIndex >= SIZE_OF_HEADER) { SerialUSB.println(); }
     }
     else {
         switch ( this->bitIndex ) {
             case 0:
               this->bitBuffer = START_BIT;
               this->bitIndex++;
+              SerialUSB.print("chan: ");
+              SerialUSB.println(channelIndex, DEC);
               break;
             case 10:
               this->bitBuffer = STOP_BIT;
               this->bitIndex = 0;
               this->channelIndex++;
+              SerialUSB.println();
               break;
             case 9: 
               this->bitBuffer = STOP_BIT;
@@ -121,11 +129,11 @@ void DmxClass::handler(void) {
               break;
             default: // channel data: cases 1 through 8
               this->bitBuffer = bitRead(this->channel[this->channelIndex], this->bitIndex - 1);
+              SerialUSB.print(bitBuffer, DEC);
               this->bitIndex++;
               break;
         }
     }
-    SerialUSB.println("end of packet");
 }
 
 void DmxClass::write(int chan, uint8 value) {
