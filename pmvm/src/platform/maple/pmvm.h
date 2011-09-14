@@ -3,6 +3,7 @@
 
 #include "wirish.h"
 #include "plat.h"
+#include "timer.h"
 
 class PMVM {
 	

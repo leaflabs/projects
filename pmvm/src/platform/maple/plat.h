@@ -29,5 +29,6 @@ struct _pm_opts_t {
 
 void PMVM_init(pm_opts_t * pm_opts);
 
+void PMVM_us_timer_interrupt(unsigned int us);
 
 #endif /* _PLAT_H_ */

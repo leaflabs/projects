@@ -147,7 +147,13 @@ void plat_reportError(PmReturn_t result) {
     }
 }
 
+//us interrupt to tell PMVM that some us has passed
+void PMVM_us_timer_interrupt(unsigned int us){
+	//"us" number of us have passed
+	pm_vmPeriodic(us);
+}
 
+//initialization of libmaple
 void PMVM_init(pm_opts_t * pm_opts){
 	opts = pm_opts;	
 }
