@@ -1,0 +1,60 @@
+==========================
+The STM32 Platform Project
+==========================
+
+
+:Author:    James Snyder
+
+
+Purpose
+-------
+
+This is a sample project that demonstrates running interactive PyMite (ipm)
+on the `ET-STM32 Stamp Module`_, which is an STM32 processor on a stamp-type
+board.  The STM32 has an ARM Cortex M3 core.
+
+.. _`ET-STM32 Stamp Module`: http://www.futurlec.com/ET-STM32_Stamp.shtml
+
+
+Requirements
+------------
+
+Follow `this explanation`_ to build ARM EABI GCC tools
+
+.. _`this explanation`: http://github.com/jsnyder/arm-eabi-toolchain
+
+If you use the current version of this guide, make sure to edit
+``src/platform/stm32/SConscript`` so that TCHAIN is set to ``arm-none-eabi``
+
+
+Building the Project
+--------------------
+
+:Note: This platform does not have Makefile build support.
+
+Run the following commands once to download files from ST Microelectronics::
+
+    $ cd src/platform/stm32
+    $ python update_periph_lib.py
+
+Now use scons to build the project::
+
+    $ cd ../../..
+    $ scons PLATFORM=stm32
+
+Now load the following file into your target's flash:
+``src/platform/stm32/main.bin``
+
+You should be able to do this using the `stm32ld`_ tool (among
+others). If you already have this tool compiled and in your path you
+can flash with this command::
+
+    $ stm32ld <port> 115200 src/platform/stm32/main.bin
+
+.. _`stm32ld`: http://github.com/jsnyder/stm32ld
+
+You should now be able to use IPM with this port::
+
+    $ ./src/tools/ipm.py -f src/platform/stm32/pmfeatures.py -s <port>
+
+.. :mode=rest:
