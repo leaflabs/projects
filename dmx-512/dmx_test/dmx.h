@@ -40,13 +40,14 @@
 #endif 
 
 #include "timer.h"
+#include "usart.h"
 #include "libmaple_types.h"
 #include "wirish_types.h"
 
 #define DEBUG_LED 1
-#define DMX_RTS_PIN 9
-#define DMX_BRK_PIN 6
-#define DMX_USART_DEV USART1
+#define DMX_BRK_PIN 12
+#define DMX_RTS_PIN 13
+#define DMX_USART_DEV USART2
 #define MAX_CHANNELS 512 // to save memory, reduce this number
 
 // class definition for dmx lights

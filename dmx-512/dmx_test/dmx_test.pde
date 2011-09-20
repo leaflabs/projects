@@ -9,6 +9,7 @@
  */
 
 #include "dmx.h"
+//#include "~/Documents/MapleIDE/libraries/fftw/api/fftw3.h"
 
 DmxClass DMX;
 
@@ -18,9 +19,9 @@ void setup() {
 }
 
 void loop() {
-    for(int i=0; i<DMX.channel_count; i++) {
+    for (int i=1; i<=DMX.channel_count; i++) {
         DMX.write(i, random(256));
     }
     DMX.send();
-    delay(480);
+    delay(1000);
 }
