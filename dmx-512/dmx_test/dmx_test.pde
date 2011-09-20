@@ -14,7 +14,6 @@
 DmxClass DMX;
 
 void setup() {
-    SerialUSB.begin();
     DMX.begin(3);
 }
 
@@ -23,5 +22,5 @@ void loop() {
         DMX.write(i, random(256));
     }
     DMX.send();
-    delay(1000);
+    delay(100);
 }

@@ -61,6 +61,7 @@ class DmxClass {
     uint16 channel_count;
     
   private:
+    uint8 *chan;
     uint8 channel[MAX_CHANNELS];
 };
 

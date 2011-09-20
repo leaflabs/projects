@@ -39,13 +39,14 @@ DmxClass::DmxClass() {
   // for Sparkfun RS-485 breakout board
   pinMode(BOARD_LED_PIN, OUTPUT);          // On board LED as ouptu
   pinMode(BOARD_BUTTON_PIN, INPUT);        // On board button as input
-  pinMode(DMX_BRK_PIN, OUTPUT); // configure Break as an output
+  pinMode(DMX_BRK_PIN, OUTPUT);            // configure Break as an output
   pinMode(DMX_RTS_PIN, OUTPUT);            // configure RTS pin as output
   digitalWrite(DMX_RTS_PIN, HIGH);         // RTS high for drive mode
 }
 
 void DmxClass::begin(uint16 n) {
-    SerialUSB.end();
+    //SerialUSB.end();
+    SerialUSB.begin();
     if (n > MAX_CHANNELS) {
         return; }
     else {
@@ -59,38 +60,40 @@ void DmxClass::begin(uint16 n) {
 //    usart_set_baud_rate(DMX_USART_DEV, PCLK2, 250000);
 //    usart_enable(DMX_USART_DEV);
     DMX_USART_DEV->regs->CR2 |= USART_CR2_STOP_BITS_2;
-    this->channel[0]=0;
+    this->channel[0]=0; //start-code hack
+    this->chan = &this->channel[0];
 }
 
 void DmxClass::end(void) {
     SerialUSB.begin();
-    usart_disable(DMX_USART_DEV);
+    //usart_disable(DMX_USART_DEV);
 }
 
 void DmxClass::send(void) { 
-    if (DEBUG_LED) { toggleLED(); }
+    if (DEBUG_LED) { digitalWrite(BOARD_LED_PIN, HIGH); }
     gpio_write_bit(GPIOC, 15, HIGH);
-    delayMicroseconds(96);
+    delayMicroseconds(16);//96);
     gpio_set_mode(GPIOC, 15, GPIO_INPUT_FLOATING);
-    //Serial2.write(this->channel, this->channel_count);
-    for (int i=0; i<=this->channel_count; i++) {
-        usart_putc(DMX_USART_DEV, this->channel[i]);
-    }
-    //usart_tx(DMX_USART_DEV, this->channel, this->channel_count+1);
-    delayMicroseconds(44*(this->channel_count+1));
+    Serial2.print(this->channel);
+//    usart_reg_map *regs = DMX_USART_DEV->regs;
+//    uint16 txed = 0;
+//    while ((regs->SR & USART_SR_TXE) && (txed <= this->channel_count+1)) {
+//        regs->DR = this->channel[txed++];
+//        //delayMicroseconds(4);
+//    }
     //pinMode(DMX_BRK_PIN, OUTPUT);
-    gpio_set_mode(GPIOC, 15, GPIO_OUTPUT_OD);
+    gpio_set_mode(GPIOC, 15, GPIO_OUTPUT_PP);
     gpio_write_bit(GPIOC, 15, LOW);
-    //delayMicroseconds(156);
+    delayMicroseconds(156);
     //usart_reset_rx(DMX_USART_DEV);
-    if (DEBUG_LED) { toggleLED(); }
+    if (DEBUG_LED) { toggleLED(); }  
 }
 
-void DmxClass::write(uint16 chan, uint8 value) {
-    if (chan >= MAX_CHANNELS) { 
+void DmxClass::write(uint16 c, uint8 v) {
+    if (c >= MAX_CHANNELS) { 
         return; }
-    else if (chan == 0) {
+    else if (c == 0) {
         return; }
     else { 
-        this->channel[chan] = value; }
+        this->channel[c] = v; }
 }
