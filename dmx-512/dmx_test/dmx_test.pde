@@ -9,18 +9,26 @@
  */
 
 #include "dmx.h"
-//#include "~/Documents/MapleIDE/libraries/fftw/api/fftw3.h"
+
+#define PI 3.14159265 
 
 DmxClass DMX;
+float t = 1.0;
+float s;
+uint8 y;
 
 void setup() {
-    DMX.begin(3);
+    DMX.begin(512);
 }
 
 void loop() {
-    for (int i=1; i<=DMX.channel_count; i++) {
-        DMX.write(i, random(256));
+    s = sin(PI*t/100.0);
+    y = uint8(255*pow(s, 2));
+    for (int i=1; i<=DMX.count; i++) {
+        DMX.write(i, y );
     }
     DMX.send();
-    delay(100);
+    
+    if (t >= 100.0) { t = 0; }
+    else { t+=1.0; }
 }

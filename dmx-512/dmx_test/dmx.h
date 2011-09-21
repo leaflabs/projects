@@ -39,12 +39,12 @@
 #include "wirish.h"             /* hack for IDE compile */
 #endif 
 
-#include "timer.h"
+#include "gpio.h"
 #include "usart.h"
-#include "libmaple_types.h"
-#include "wirish_types.h"
+#include "boards.h"
+//#include "timer.h"
 
-#define DEBUG_LED 1
+#define DEBUG_LED 0
 #define DMX_BRK_PIN 12
 #define DMX_RTS_PIN 13
 #define DMX_USART_DEV USART2
@@ -58,10 +58,10 @@ class DmxClass {
     void end(void); 
     void send(void);
     void write(uint16, uint8);
-    uint16 channel_count;
+    uint16 count;
+    //uint8 *data;
     
   private:
-    uint8 *chan;
     uint8 channel[MAX_CHANNELS];
 };
 
