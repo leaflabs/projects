@@ -29,7 +29,7 @@
  *
  * by Brian Tovar
  * created  26 Aug 2011
- * modified  6 Sep 2011
+ * modified 14 Sep 2011
  */
 
 #ifndef _DMX_H_
@@ -39,22 +39,16 @@
 #include "wirish.h"             /* hack for IDE compile */
 #endif 
 
-#include "timer.h"
-#include "libmaple_types.h"
-#include "wirish_types.h"
+#include "gpio.h"
+#include "usart.h"
+#include "boards.h"
+//#include "timer.h"
 
-#define MAX_CHANNELS 512 // to save program memory, reduce this number
-#define SIZE_OF_HEADER 16
-
-//static const uint8 HEADER[SIZE_OF_HEADER] = {
-//    0, // BREAK (should be longer, going to assume space btwn packets)
-//    1, 1, 1, 1, // MARK AFTER BREAK
-//    0, // START BIT
-//    0, 0, 0, 0, 0, 0, 0, 0, // START CODE
-//    1, 1, // STOP BITs
-//};
-
-void dmx_handler_hack(void);
+#define DEBUG_LED 0
+#define DMX_BRK_PIN 12
+#define DMX_RTS_PIN 13
+#define DMX_USART_DEV USART2
+#define MAX_CHANNELS 512 // to save memory, reduce this number
 
 // class definition for dmx lights
 class DmxClass {
@@ -63,23 +57,12 @@ class DmxClass {
     void begin(uint16);
     void end(void); 
     void send(void);
-    void write(int, uint8);
-    uint16 number_of_channels;
-    void handler(void);
+    void write(uint16, uint8);
+    uint16 count;
+    //uint8 *data;
     
   private:
-    uint8 dmx_rts_pin;
-    uint8 dmx_tx1_pin;
-    uint8 dmx_rx1_pin;
-    uint8 dmx_tx2_pin;
-    uint8 dmx_rx2_pin;
-    timer_dev* dmx_timer;
-    timer_channel dmx_timer_ch;
-
-    int headerIndex, channelIndex, bitIndex;
-    uint8 bitBuffer;
     uint8 channel[MAX_CHANNELS];
-    uint8 header(void);
 };
 
 // Declare the instance that the users of the library can use
