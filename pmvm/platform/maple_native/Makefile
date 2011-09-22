@@ -91,7 +91,11 @@ ERROR_LED_PIN  := 15
 DENSITY := STM32_HIGH_DENSITY
 
 # Useful paths
-SRCROOT := /home/cospan/Projects/libmaple
+ifeq ($(LIB_MAPLE_HOME),)
+SRCROOT := .
+else
+SRCROOT := $(LIB_MAPLE_HOME)
+endif
 BUILD_PATH = build
 LIBMAPLE_PATH := $(SRCROOT)/libmaple
 SUPPORT_PATH := $(SRCROOT)/support
