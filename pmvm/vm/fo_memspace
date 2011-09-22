@@ -1,0 +1,45 @@
+./interp.c:79:        bc = mem_getByte(PM_FP->fo_memspace, &PM_IP);
+./interp.c:801:                pPmBlock_t pb1 = PM_FP->fo_blockstack;
+./interp.c:825:                PM_FP->fo_blockstack = pb1->next;
+./interp.c:834:                PM_PUSH((pPmObj_t)PM_FP->fo_attrs);
+./interp.c:846:                    !(PM_FP->fo_func->f_co->co_flags & CO_GENERATOR))
+./interp.c:849:                    t8 = PM_FP->fo_func->f_co->co_nlocals;
+./interp.c:850:                    C_ASSERT(PM_SP == &(PM_FP->fo_locals[t8]));
+./interp.c:859:                if (PM_FP->fo_back == C_NULL)
+./interp.c:867:                PM_FP = PM_FP->fo_back;
+./interp.c:916:                retval = dict_update((pPmObj_t)PM_FP->fo_attrs,
+./interp.c:939:                PM_FP = PM_FP->fo_back;
+./interp.c:948:                pobj1 = (pPmObj_t)PM_FP->fo_blockstack;
+./interp.c:954:                PM_FP->fo_blockstack = PM_FP->fo_blockstack->next;
+./interp.c:984:                pobj2 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:987:                retval = dict_setItem((pPmObj_t)PM_FP->fo_attrs, pobj2, TOS);
+./interp.c:998:                pobj2 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1001:                retval = dict_delItem((pPmObj_t)PM_FP->fo_attrs, pobj2);
+./interp.c:1140:                pobj3 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1191:                pobj3 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1212:                pobj2 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1215:                retval = dict_setItem((pPmObj_t)PM_FP->fo_globals, pobj2, TOS);
+./interp.c:1226:                pobj2 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1229:                retval = dict_delItem((pPmObj_t)PM_FP->fo_globals, pobj2);
+./interp.c:1254:                PM_PUSH(PM_FP->fo_func->f_co->co_consts->val[t16]);
+./interp.c:1262:                pobj1 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1265:                retval = dict_getItem((pPmObj_t)PM_FP->fo_attrs, pobj1, &pobj2);
+./interp.c:1269:                    retval = dict_getItem((pPmObj_t)PM_FP->fo_globals,
+./interp.c:1376:                pobj2 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1537:                pobj1 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1610:                pobj2 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1650:                PM_IP = PM_FP->fo_func->f_co->co_codeaddr + t16;
+./interp.c:1656:                pobj1 = PM_FP->fo_func->f_co->co_names->val[t16];
+./interp.c:1659:                retval = dict_getItem((pPmObj_t)PM_FP->fo_globals,
+./interp.c:1701:                ((pPmBlock_t)pobj1)->next = PM_FP->fo_blockstack;
+./interp.c:1702:                PM_FP->fo_blockstack = (pPmBlock_t)pobj1;
+./interp.c:1708:                PM_PUSH(PM_FP->fo_locals[t16]);
+./interp.c:1713:                PM_FP->fo_locals[t16] = PM_POP();
+./interp.c:1719:                PM_FP->fo_locals[t16] = PM_NONE;
+./interp.c:2136:                retval = func_new(TOS, (pPmObj_t)PM_FP->fo_globals, &pobj2);
+./interp.c:2178:                retval = func_new(TOS, (pPmObj_t)PM_FP->fo_globals, &pobj2);
+./interp.c:2210:                pobj1 = PM_FP->fo_locals[PM_FP->fo_func->f_co->co_nlocals + t16];
+./interp.c:2222:                PM_FP->fo_locals[PM_FP->fo_func->f_co->co_nlocals + t16] = PM_POP();
+./interp.h:38:#define PM_IP (PM_FP->fo_ip)
+./interp.h:40:#define PM_SP (PM_FP->fo_sp)
+./interp.h:57:#define GET_ARG()       mem_getWord(PM_FP->fo_memspace, &PM_IP)
