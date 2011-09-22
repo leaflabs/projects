@@ -1,0 +1,29 @@
+#######################################
+# Syntax Coloring Map For Dmx-512
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+header 	KEYWORD1
+channel	KEYWORD1
+bitBuffer	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+dmx	KEYWORD2
+send	KEYWORD2
+write	KEYWORD2
+handler	KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+STOP_BIT	LITERAL1
+START_BIT	LITERAL1
+END_OF_PACKET_BIT	LITERAL1
+SIZE_OF_HEADER	LITERAL1
+DMX_TIMER_CHAN	LITERAL1
+NUM_OF_CHANNELS	LITERAL1
