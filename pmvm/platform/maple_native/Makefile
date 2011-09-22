@@ -17,6 +17,12 @@ PMLDARGS :=
 
 IPM=true
 
+
+#IPM Defines
+SERIAL_DEVICE ?= /dev/ttyUSB0
+SERIAL_BAUD ?= 115200
+
+
 PM_INC := -I../../vm
 CINCS = $(PM_INC) -I$(abspath .) 
 
@@ -222,16 +228,12 @@ $(BUILDDIRS):
 
 # General directory independent build rules, generate dependency information
 $(BUILD_PATH)/%.o: %.c MAKE_BUILD_FOLDER
-	$(SILENT CC) $(CC) $(CFLAGS) -MMD -MP -MF -MT -o $@ -c $<
-
-	#$(SILENT_CC) $(CC) $(CFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
-
+	$(SILENT_CC) $(CC) $(CFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
 
 
 $(BUILD_PATH)/%.o: %.cpp MAKE_BUILD_FOLDER
-	$(SILENT_CXX) $(CXX) $(CFLAGS) $(CXXFLAGS) -MMD -MP -MF -MT -o $@ -c $<
+	$(SILENT_CXX) $(CXX) $(CFLAGS) $(CXXFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
 
-#	$(SILENT_CXX) $(CXX) $(CFLAGS) $(CXXFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
 
 $(BUILD_PATH)/%.o: %.S MAKE_BUILD_FOLDER
 	$(SILENT_AS) $(AS) $(ASFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
@@ -296,6 +298,8 @@ $(BUILD_PATH)/$(BOARD).bin: $(BUILD_PATH)/$(BOARD).elf
 	@echo $(MEMORY_TARGET) > $(BUILD_PATH)/build-type
 
 
+IPM:
+	../../tools/ipm.py -f pmfeatures.py --serial=$(SERIAL_DEVICE) --baud=$(SERIAL_BAUD)
 
 ALL_CFLAGS := $(GLOBAL_CFLAGS)
 export PM_LIB_FN CC OBJCOPY NM ALL_CFLAGS AR LDFLAGS PM_FLAGS

@@ -7,7 +7,7 @@
 def init_gpio():
 	"""__NATIVE__
 	PmReturn_t retval = PM_RET_OK;
-	gpio_init_all();
+	gpio_init(GPIOC);
 	gpio_set_mode(GPIOC, 15, GPIO_OUTPUT_PP);
 	NATIVE_SET_TOS(PM_NONE);
 	return retval;
@@ -23,5 +23,11 @@ def toggle_led():
 	"""
 	pass
 
+def test():
+	"""__NATIVE__
+	PmReturn_t retval = PM_RET_OK;
+	NATIVE_SET_TOS(PM_NONE);
+	return retval;
+	"""
 
 # :mode=c:

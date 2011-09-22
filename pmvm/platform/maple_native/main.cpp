@@ -25,6 +25,8 @@
 
 #define LEN_FNLOOKUP 26
 #define LEN_EXNLOOKUP 18
+#define HEAP_SIZE 0x8000
+
 
 
 
@@ -98,8 +100,6 @@ void setup(){
 	pinMode(BOARD_BUTTON_PIN, INPUT);
 
 }
-
-#define HEAP_SIZE 0x7000
 
 #define S_SZ 200
 

@@ -123,7 +123,7 @@ PmReturn_t plat_putByte(uint8_t b){
 
 
 PmReturn_t plat_getMsTicks(uint32_t *r_ticks){
-	s->print("time check");
+	//s->print("time check");
 	*r_ticks =  millis();
     return PM_RET_OK;
 }
