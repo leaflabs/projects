@@ -5,13 +5,11 @@
 # See the LICENSE file at the root of this package for licensing details.
 #
 
-import ipm
-print "starting interactive mode"
-ipm.ipm()
+#import sys
 #import maple
+import ipm
+ipm.ipm()
 
 #maple.init_gpio()
 #maple.toggle_led()
-#print "hi\r\n"
-#print "test\r\n"
 

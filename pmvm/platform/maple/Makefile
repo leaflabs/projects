@@ -1,14 +1,80 @@
 .DEFAULT_GOAL := all
 
 
+d := $(abspath .)
+
+# PyMite Configuration
+PLATFORM := $(notdir $(CURDIR))
+PM_LIB_ROOT := pmvm_$(PLATFORM)
+PM_LIB_FN = lib$(PM_LIB_ROOT).a
+PM_LIB_PATH := ../../vm/$(PM_LIB_FN)
+PM_USR_SOURCES = main.py maple.py 
+PMIMGCREATOR := ../../tools/pmImgCreator.py
+PMGENPMFEATURES := ../../tools/pmGenPmFeatures.py
+BUILD_PATH := build
+
+PMLDARGS :=
+
+IPM=true
+
+
+#IPM Defines
+SERIAL_DEVICE ?= /dev/ttyUSB0
+SERIAL_BAUD ?= 115200
+
+
 PM_INC := -I../../vm
 CINCS = $(PM_INC) -I$(abspath .) 
 
-
 TARGET = main
+BUILDDIRS :=
+TGT_BIN   :=
+
+#targets
+cSRCS :=  $(TARGET)_img.c $(TARGET)_nat.c syscalls.c
+
+cppSRCS := main.cpp plat.cpp pymite_debug.cpp
+
+#libSRCS_$(d) := libpmvm_$(PLATFORM).a 
+
+#cFILES := $(cSRCS:%=$(d)/%)
+#cppFILES := $(cppSRCS:%=$(d)/%)
+cFILES := $(cSRCS)
+cppFILES := $(cppSRCS)
+#libFILES_$(d) := $(libSRCS_$(d):%=$(d)/%)
+
+OBJS := $(cFILES:%.c=$(BUILD_PATH)/%.o) \
+		$(cppFILES:%.cpp=$(BUILD_PATH)/%.o)
+
+DEPS := $(OBJS:%.o=%.d)
+
+TGT_BIN += $(OBJS) $(BUILD_PATH)/pmstdlib_img.o $(BUILD_PATH)/pmstdlib_nat.o
+
+# Useful tools
+CC       := arm-none-eabi-gcc
+CXX      := arm-none-eabi-g++
+LD       := arm-none-eabi-ld -v
+AR       := arm-none-eabi-ar
+AS       := arm-none-eabi-gcc
+OBJCOPY  := arm-none-eabi-objcopy
+DISAS    := arm-none-eabi-objdump
+OBJDUMP  := arm-none-eabi-objdump
+SIZE     := arm-none-eabi-size
+DFU      := dfu-util
 
 
-CPPSRCS := main.cpp
+# Suppress annoying output unless V is set
+ifndef V
+   SILENT_CC       = @echo '  [CC]       ' $(@:$(BUILD_PATH)/%.o=%.c);
+   SILENT_AS       = @echo '  [AS]       ' $(@:$(BUILD_PATH)/%.o=%.S);
+   SILENT_CXX      = @echo '  [CXX]      ' $(@:$(BUILD_PATH)/%.o=%.cpp);
+   SILENT_LD       = @echo '  [LD]       ' $(@F);
+   SILENT_AR       = @echo '  [AR]       '
+   SILENT_OBJCOPY  = @echo '  [OBJCOPY]  ' $(@F);
+   SILENT_DISAS    = @echo '  [DISAS]    ' $(@:$(BUILD_PATH)/%.bin=%).disas;
+   SILENT_OBJDUMP  = @echo '  [OBJDUMP]  ' $(OBJDUMP);
+endif
+
 
 # Valid BOARDs: maple, maple_native, ...
 BOARD ?= maple_native
@@ -18,36 +84,26 @@ MEMORY_TARGET ?= flash
 VENDOR_ID  := 1EAF
 PRODUCT_ID := 0003
 
-# Guess the MCU based on the BOARD (can be overridden )
-# FIXME the error LED config needs to be in wirish/ instead
-ifeq ($(BOARD), maple)
-   MCU := STM32F103RB
-   PRODUCT_ID := 0003
-   ERROR_LED_PORT := GPIOA
-   ERROR_LED_PIN  := 5
-   DENSITY := STM32_MEDIUM_DENSITY
+MCU := STM32F103ZE
+PRODUCT_ID := 0003
+ERROR_LED_PORT := GPIOC
+ERROR_LED_PIN  := 15
+DENSITY := STM32_HIGH_DENSITY
+
+# Useful paths
+ifeq ($(LIB_MAPLE_HOME),)
+SRCROOT := .
+else
+SRCROOT := $(LIB_MAPLE_HOME)
 endif
-ifeq ($(BOARD), maple_native)
-   MCU := STM32F103ZE
-   PRODUCT_ID := 0003
-   ERROR_LED_PORT := GPIOC
-   ERROR_LED_PIN  := 15
-   DENSITY := STM32_HIGH_DENSITY
-endif
-ifeq ($(BOARD), maple_mini)
-   MCU := STM32F103CB
-   PRODUCT_ID := 0003
-   ERROR_LED_PORT := GPIOB
-   ERROR_LED_PIN  := 1
-   DENSITY := STM32_MEDIUM_DENSITY
-endif
-ifeq ($(BOARD), maple_RET6)
-   MCU := STM32F103RE
-   PRODUCT_ID := 0003
-   ERROR_LED_PORT := GPIOA
-   ERROR_LED_PIN := 5
-   DENSITY := STM32_HIGH_DENSITY
-endif
+BUILD_PATH = build
+LIBMAPLE_PATH := $(SRCROOT)/libmaple
+SUPPORT_PATH := $(SRCROOT)/support
+#OPENOCD_WRAPPER := $(SRCROOT)/scripts/openocd-wrapper.sh
+
+OBJS += $(CSRCS:%.c=$(BUILD_PATH)/%.o) 
+OBJS += $(CPPSRCS:%.cpp=$(BUILD_PATH)/%.o)
+
 
 # Some target specific things
 ifeq ($(MEMORY_TARGET), ram)
@@ -63,21 +119,8 @@ ifeq ($(MEMORY_TARGET), jtag)
    VECT_BASE_ADDR := VECT_TAB_BASE
 endif
 
-# Useful paths
-ifeq ($(LIB_MAPLE_HOME),)
-SRCROOT := /home/cospan/Projects/libmaple
-else
-SRCROOT := $(LIB_MAPLE_HOME)
-endif
-BUILD_PATH = build
-LIBMAPLE_PATH := $(SRCROOT)/libmaple
-SUPPORT_PATH := $(SRCROOT)/support
-#OPENOCD_WRAPPER := $(SRCROOT)/scripts/openocd-wrapper.sh
-
-OBJS += $(CSRCS:%.c=$(BUILD_PATH)/%.o) 
-OBJS += $(CPPSRCS:%.cpp=$(BUILD_PATH)/%.o)
-
-
+LIBMAPLE_INCLUDES := -I$(SRCROOT)/libmaple
+WIRISH_INCLUDES := -I$(SRCROOT)/wirish -I$(SRCROOT)/wirish/boards -I$(SRCROOT)/wirish/comm
 
 
 # Compilation flags.
@@ -86,7 +129,8 @@ GLOBAL_FLAGS    := -D$(VECT_BASE_ADDR)					     \
 		   -DBOARD_$(BOARD) -DMCU_$(MCU)			     \
 		   -DERROR_LED_PORT=$(ERROR_LED_PORT)			     \
 		   -DERROR_LED_PIN=$(ERROR_LED_PIN)			     \
-		   -D$(DENSITY) $(CINCS) 
+		   -D$(DENSITY) $(WIRISH_INCLUDES) $(LIBMAPLE_INCLUDES) $(CINCS)
+
 GLOBAL_CFLAGS   := -Os -g3 -gdwarf-2  -mcpu=cortex-m3 -mthumb -march=armv7-m \
 		   -nostdlib -ffunction-sections -fdata-sections	     \
 		   -Wl,--gc-sections $(GLOBAL_FLAGS) \
@@ -101,27 +145,23 @@ LDFLAGS  = -T$(LDDIR)/$(LDSCRIPT) -L$(LDDIR)    \
             --gc-sections --print-gc-sections --march=armv7-m -Wall \
 			-L../../vm -l$(PM_LIB_ROOT) -L.
 
-# Set up build rules and some useful templates
-include $(SUPPORT_PATH)/make/build-rules.mk
-include $(SUPPORT_PATH)/make/build-templates.mk
+
+
+
+CFLAGS   = $(GLOBAL_CFLAGS)
+CXXFLAGS = $(GLOBAL_CXXFLAGS)
+ASFLAGS  = $(GLOBAL_ASFLAGS) 
+#LDFLAGS  = $(GLOBA_LDFLAGS)
+
 
 # Set all submodules here
-LIBMAPLE_MODULES := $(SRCROOT)/libmaple
-LIBMAPLE_MODULES += $(SRCROOT)/wirish
-# Official libraries:
-#LIBMAPLE_MODULES += $(SRCROOT)/libraries/Servo
-#LIBMAPLE_MODULES += $(SRCROOT)/libraries/LiquidCrystal
-#LIBMAPLE_MODULES += $(SRCROOT)/libraries/Wire
-
-# Experimental libraries:
-#LIBMAPLE_MODULES += $(SRCROOT)/libraries/FreeRTOS
-LIBMAPLE_MODULES += /home/cospan/Projects/python-on-a-chip/src/platform/maple
+#LIBMAPLE_MODULES += /home/cospan/Projects/python-on-a-chip/src/platform/maple
 
 # call each module rules.mk
 $(foreach m,$(LIBMAPLE_MODULES),$(eval $(call LIBMAPLE_MODULE_template,$(m))))
 
 # Main target
-include build-targets.mk
+#include build-targets.mk
 
 .PHONY: install all clean help debug cscope tags ctags ram flash jtag doxygen mrproper
 
@@ -148,50 +188,65 @@ ifneq ($(PREV_BUILD_TYPE), $(MEMORY_TARGET))
 endif
 
 
-
-
 #pmvm makefile
-all: pmfeatures.h $(PM_LIB_PATH) $(TARGET)_nat.c $(TARGET)_img.c build-check MSG_INFO $(BUILD_PATH)/$(BOARD).bin ../../vm/pmstdlib_img.c ../../vm/pmstdlib_nat.c
 
+all: $(PM_LIB_PATH) build-check MSG_INFO $(BUILD_PATH)/$(BOARD).bin MAKE_BUILD_FOLDER 
+
+.PHONY: MAKE_BUILD_FOLDER
+
+test: MAKE_BUILD_FOLDER
+	@echo "Objects: " $(TGT_BIN)
+	@echo "Build_Path: " $(BUILD_PATH)
+	@echo "Making build folder"
+
+MAKE_BUILD_FOLDER:
+	@mkdir -p $(BUILD_PATH)
+
+
+pmfeatures.h : pmfeatures.py $(PMGENPMFEATURES)
+	$(PMGENPMFEATURES) pmfeatures.py > $@ 
+
+# Generate native code and module images from the python source
+$(TARGET)_nat.c $(TARGET)_img.c: $(PM_USR_SOURCES) $(PMIMGCREATOR) pmfeatures.py
+	$(PMIMGCREATOR) -f pmfeatures.py -c -u -o $(TARGET)_img.c --native-file=$(TARGET)_nat.c $(PM_USR_SOURCES)
+
+
+$(PM_LIB_PATH) : ../../vm/*.c ../../vm/*.h pmfeatures.h
+	@echo "making library"
+	make -C ../../vm
+
+
+$(BUILD_PATH)/pmstdlib_img.o:../../vm/pmstdlib_img.c MAKE_BUILD_FOLDER
+	$(SILENT_CC) $(CC) $(CFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
+
+$(BUILD_PATH)/pmstdlib_nat.o:../../vm/pmstdlib_nat.c MAKE_BUILD_FOLDER
+	$(SILENT_CC) $(CC) $(CFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
+
+../../vm/pmstdlib_img.c ../../vm/pmstdlib_nat.c :
+	$(MAKE) -C ../../vm pmstdlib_img.c pmstdlib_nat.c
+
+
+$(BUILDDIRS):
+	@mkdir -p $@
+
+
+# General directory independent build rules, generate dependency information
+$(BUILD_PATH)/%.o: %.c MAKE_BUILD_FOLDER
+	$(SILENT_CC) $(CC) $(CFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
+
+
+$(BUILD_PATH)/%.o: %.cpp MAKE_BUILD_FOLDER
+	$(SILENT_CXX) $(CXX) $(CFLAGS) $(CXXFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
+
+
+$(BUILD_PATH)/%.o: %.S MAKE_BUILD_FOLDER
+	$(SILENT_AS) $(AS) $(ASFLAGS) -MMD -MP -MF $(@:%.o=%.d) -MT $@ -o $@ -c $<
 
 
 clean:
 	rm -rf build
 	make -C ../../vm clean
 	rm $(TARGET)_img.* $(TARGET)_nat.* pmfeatures.h 
-
-mrproper: clean
-	rm -rf doxygen
-
-help:
-	@echo ""
-	@echo "  libmaple Makefile help"
-	@echo "  ----------------------"
-	@echo "  "
-	@echo "  Be sure to set BOARD if not compiling for Maple (e.g."
-	@echo "  use BOARD=maple_mini for mini, etc.)"
-	@echo "  "
-	@echo "  Compile targets (default MEMORY_TARGET=flash):"
-	@echo "      ram:    Compile sketch code to ram"
-	@echo "      flash:  Compile sketch code to flash"
-	@echo "      jtag:   Compile sketch code to jtag"
-	@echo "      sketch: Compile sketch code to target MEMORY_TARGET"
-	@echo "  "
-	@echo "  Programming targets:"
-	@echo "      install:  Upload code to target"
-	@echo "  "
-	@echo "  Other targets:"
-	@echo "      debug:  Start an openocd gdb server, port 3333"
-	@echo "      clean: Remove all build and object files"
-	@echo "      help: Show this message"
-	@echo "      doxygen: Build Doxygen HTML and XML documentation"
-	@echo "      mrproper: Remove all generated files"
-	@echo "  "
-
-debug:
-	@echo "hi"
-#	$(OPENOCD_WRAPPER) debug
-	support/scripts/openocd-wrapper.sh debug
 
 cscope:
 	rm -rf *.cscope
@@ -206,17 +261,51 @@ ctags:
 	@echo "Made tags file for VIM code browsing"
 
 ram:
-	@$(MAKE) MEMORY_TARGET=ram --no-print-directory sketch
+	@$(MAKE) MEMORY_TARGET=ram --no-print-directory all
 
 flash:
-	@$(MAKE) MEMORY_TARGET=flash --no-print-directory sketch
+	@$(MAKE) MEMORY_TARGET=flash --no-print-directory all
 
 jtag:
-	@$(MAKE) MEMORY_TARGET=jtag --no-print-directory sketch
+	@$(MAKE) MEMORY_TARGET=jtag --no-print-directory all
 
 doxygen:
 	doxygen $(SUPPORT_PATH)/doxygen/Doxyfile
 
-ALL_CFLAGS := $(GLOBAL_CFLAGS)
+MSG_INFO:
+	@echo "================================================================================"
+	@echo ""
+	@echo "  Build info:"
+	@echo "     BOARD:          " $(BOARD)
+	@echo "     MCU:            " $(MCU)
+	@echo "     MEMORY_TARGET:  " $(MEMORY_TARGET)
+	@echo "     LIB_MAPLE_HOME: " $(LIB_MAPLE_HOME)
+	@echo ""
+	@echo "  See 'make help' for all possible targets"
+	@echo ""
+	@echo "================================================================================"
+	@echo
 
+$(BUILD_PATH)/$(BOARD).elf: $(BUILDDIRS) $(TGT_BIN)
+	$(SILENT_LD) $(CXX) $(LDFLAGS) -o $@ $(TGT_BIN) -L../../vm -lpmvm_$(PLATFORM) -L. -lmaple -Wl,-Map,$(BUILD_PATH)/$(BOARD).map
+
+
+$(BUILD_PATH)/$(BOARD).bin: $(BUILD_PATH)/$(BOARD).elf
+	$(SILENT_OBJCOPY) $(OBJCOPY) -v -Obinary $(BUILD_PATH)/$(BOARD).elf $@ 1>/dev/null
+	$(SILENT_DISAS) $(DISAS) -d $(BUILD_PATH)/$(BOARD).elf > $(BUILD_PATH)/$(BOARD).disas
+	@echo " "
+	@echo "Object file sizes:"
+	@find $(BUILD_PATH) -iname *.o | xargs $(SIZE) -t > $(BUILD_PATH)/$(BOARD).sizes
+	@cat $(BUILD_PATH)/$(BOARD).sizes
+	@echo " "
+	@echo "Final Size:"
+	@$(SIZE) $<
+	@echo $(MEMORY_TARGET) > $(BUILD_PATH)/build-type
+
+
+IPM:
+	../../tools/ipm.py -f pmfeatures.py --serial=$(SERIAL_DEVICE) --baud=$(SERIAL_BAUD)
+
+ALL_CFLAGS := $(GLOBAL_CFLAGS)
 export PM_LIB_FN CC OBJCOPY NM ALL_CFLAGS AR LDFLAGS PM_FLAGS
+export IPM PLATFORM

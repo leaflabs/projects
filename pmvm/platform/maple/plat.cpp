@@ -11,16 +11,20 @@
 #undef __FILE_ID__
 #define __FILE_ID__ 0x70
 
-#include "maple_plat.h"
+#include "wirish.h"
+//#include "maple_plat.h"
 #include "stdio.h"
 #include "string.h"
 #include "pm.h"
 #include "obj.h"
-#include "wirish.h"
 #include "comm/HardwareSerial.h"
 
 
-HardwareSerial *s;
+//#if SERIAL_COMM_PORT == SerialUSB
+//extern	USBSerial *ser;
+//#else
+extern	HardwareSerial *ser;
+//#endif
 
 
 #define US_UPDATE_RATE 60000
@@ -34,18 +38,15 @@ int fputc(int ch, FILE *f){
 }
 
 static void timer_handler(){
-	//s->println("t");
+	//ser->println("t");
 	//report that 500us have passed	
 	pm_vmPeriodic(US_UPDATE_RATE);
 }
 
 
-void set_comm_port (HardwareSerial *ser){
-	s = ser;	
-}
 
 PmReturn_t plat_init(void) {
-	s = &Serial3;
+//	s = &Serial3;
 	timer_init(TIMER1);
 	timer_set_mode(TIMER1, 1, TIMER_OUTPUT_COMPARE); 
 	timer_pause(TIMER1);
@@ -76,8 +77,8 @@ uint8_t plat_memGetByte(PmMemSpace_t memspace, uint8_t const **paddr){
 	//get a byte from memory
 	
     uint8_t b = 0;
-//	s->print((int)memspace, DEC);
-//	s->print(" ");
+//	ser->print((int)memspace, DEC);
+//	ser->print(" ");
 
     switch (memspace)
     {
@@ -85,10 +86,10 @@ uint8_t plat_memGetByte(PmMemSpace_t memspace, uint8_t const **paddr){
         case MEMSPACE_PROG:
             b = **paddr;
             *paddr += 1;
-//			s->print("0x");
-//			s->print((int)*paddr, HEX);
-//			s->print(" : ");
-//			s->println((uint8)**paddr, HEX);
+//			ser->print("0x");
+//			ser->print((int)*paddr, HEX);
+//			ser->print(" : ");
+//			ser->println((uint8)**paddr, HEX);
             return b;
         case MEMSPACE_EEPROM:
         case MEMSPACE_SEEPROM:
@@ -97,7 +98,7 @@ uint8_t plat_memGetByte(PmMemSpace_t memspace, uint8_t const **paddr){
         case MEMSPACE_OTHER2:
         case MEMSPACE_OTHER3:
         default:
-			s->println ("ERROR!");
+			ser->println ("ERROR!");
             return 0;
     }
 	
@@ -108,22 +109,22 @@ uint8_t plat_memGetByte(PmMemSpace_t memspace, uint8_t const **paddr){
 PmReturn_t plat_getByte(uint8_t *b){
 
     PmReturn_t retval = PM_RET_OK;
-	while (!s->available()){}
-	*b = s->read();
+	while (!ser->available()){}
+	*b = ser->read();
     return retval;
 }
 
 
 PmReturn_t plat_putByte(uint8_t b){
 
-//	s->print("in put byte");
-	s->print((char)b);
+//	ser->print("in put byte");
+	ser->print((char)b);
     return PM_RET_OK;
 }
 
 
 PmReturn_t plat_getMsTicks(uint32_t *r_ticks){
-	s->print("time check");
+	//ser->print("time check");
 	*r_ticks =  millis();
     return PM_RET_OK;
 }
@@ -210,7 +211,7 @@ void plat_reportError(PmReturn_t result) {
     pframe = gVmGlobal.pthread->pframe;
 
 	snprintf (str, S_SZ,"Traceback (top first):\r\n");
-	s->print(str);
+	ser->print(str);
 
 	// Get the top frame
 	pframe = gVmGlobal.pthread->pframe;
@@ -223,12 +224,12 @@ void plat_reportError(PmReturn_t result) {
                                    f_co->co_names, -1, &pstr);
 		if ((retval) != PM_RET_OK){
 				snprintf (str, S_SZ,"  Unable to get native func name.\r\n");
-				s->print(str);
+				ser->print(str);
                 return;
         }
         else{
              	snprintf (str, S_SZ,"  %s() __NATIVE__\r\n", ((pPmString_t)pstr)->val);
-				s->print(str);
+				ser->print(str);
 		}
 
        	// Get the frame that called the native frame
@@ -267,48 +268,48 @@ void plat_reportError(PmReturn_t result) {
 				(unsigned int) ((pPmFrame_t)pframe)->fo_ip,
 				(unsigned int) *((pPmFrame_t)pframe)->fo_ip
 				);
-			s->print(str);
+			ser->print(str);
 		}
 	    res = (uint8_t)result;
 	    if ((res > 0) && ((res - PM_RET_EX) < LEN_EXNLOOKUP)){
 			snprintf (str, S_SZ, "%s, HEX Code: %X", exnlookup[res - PM_RET_EX], result);
-			s->print(str);
+			ser->print(str);
 			
 	    }
 	    else{
-			s->print ("Error code");
-			s->print (result, HEX);
+			ser->print ("Error code");
+			ser->print (result, HEX);
 	    }
 
 		if (res == PM_RET_EX_TYPE){
-			s->print ("\r\n");
+			ser->print ("\r\n");
 			snprintf (str, S_SZ, "Type Error: 0x%X != 0x%X\r\n", OBJ_TYPE_DIC, OBJ_GET_TYPE(*((pPmFrame_t)pframe)->fo_ip)); 
-			s->print(str);
+			ser->print(str);
 		}
-	    s->print(" detected by ");
+	    ser->print(" detected by ");
 
 	    if ((gVmGlobal.errFileId > 0) && (gVmGlobal.errFileId < LEN_FNLOOKUP)){
-			s->print(fnlookup[gVmGlobal.errFileId]);
+			ser->print(fnlookup[gVmGlobal.errFileId]);
 	    }
 	    else{
 			snprintf (str, S_SZ, "FileId 0x%02X line", gVmGlobal.errFileId);
-			s->print(str);
+			ser->print(str);
 	    }
-		s->print (" ");
-		s->print (gVmGlobal.errLineNum, DEC);
-		s->print ("\r\n");
+		ser->print (" ");
+		ser->print (gVmGlobal.errLineNum, DEC);
+		ser->print ("\r\n");
 
 
 
 /*
 		snprintf (str, S_SZ, "Error:\t0x%02X\r\n", result);
-		s->print(str);
+		ser->print(str);
 	    snprintf (str, S_SZ, "\tRelease:\t0x%02X\r\n", gVmGlobal.errVmRelease);
-		s->print(str);
+		ser->print(str);
 	    snprintf (str, S_SZ,  "\tFileId:\t0x%02X\r\n", gVmGlobal.errFileId);
-		s->print(str);
+		ser->print(str);
 	    snprintf (str, S_SZ, "\tLineNum:\t%d\r\n", gVmGlobal.errLineNum);
-		s->print(str);
+		ser->print(str);
 */
 #endif
 
