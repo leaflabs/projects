@@ -23,26 +23,21 @@ TO BUILD:
 
 	within IPM
 
-	should be able to do
-	print "hi"
-	x = 4
-	abs(-2)
-
-	and other stuff like this, but it crashes when you try "import maple"
+		should be able to do
+		print "hi"
+		x = 4
+		abs(-2)
 
 
-	there is some work done for a native library you can make a script (without import ipm)
+	example within IPM: 1 second flashing LED demo
 
-	example: 1 second flashing LED demo
+		import maple
+		import sys
 
-	import maple
-	import sys
-
-
-	maple.init_gpio()
-	x = 0
-	while (1):
-		if (sys.time() > x + 1000):
-			maple.toggle_led()
-			x = sys.time()
+		maple.init_gpio()
+		x = 0
+		while (1):
+			if (sys.time() > x + 1000):
+				maple.toggle_led()
+				x = sys.time()
 
