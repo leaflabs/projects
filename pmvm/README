@@ -1,21 +1,28 @@
 
 
+Status 9/23/2011
+	-cleaned up the directories, now there is only maple, and not maple_native
+	-moved some of the debug data from the main.cpp file to a new pymite_debug.cpp file. I hope that it makes the main.cpp easier to understand
+	-working on implementing SerialUSB and HardwareSerial with commenting or uncommenting #define statements but since HardwareSerial and USBSerial
+	are two different classes it is a litte more involved
 Status 9/20/2011
 	-builds pymite and interactive pymite session (ipm) there is an error when you import modules in IPM. 
 	-There are two variations here:
 		-platform/maple: the Makefile will build libmaple and pymite
 		-platform/maple_native a static libmaple library is linked against (PREFERRED)
+	
 
 
 TO BUILD:
 	go into platform/maple_native
-	Its currently setup for Serial3, but this can be changed in main.cpp This could possible be done with a -DCOMM_PORT flag for the compiler
-		the easiest way to implement SerialUSB is to do a find and replace in the main.cpp file 
-	modify Makefile SRCROOT to point to your libmaple directory
+	Its currently setup for Serial3, but this can be changed in main.cpp with commenting or uncommenting #define statements at the top 
 	make clean; make; make install
 	when all that is done on the command line type (this will start the host side part of the python interpreter)
 	../../tools/ipm.py -f pmfeatures.py --serial=/dev/<serial device> --baud=<your baud rate (I think 9600 for SerialUSB)>
 	
+
+	within IPM
+
 	should be able to do
 	print "hi"
 	x = 4
@@ -26,11 +33,16 @@ TO BUILD:
 
 	there is some work done for a native library you can make a script (without import ipm)
 
-	example:
+	example: 1 second flashing LED demo
 
 	import maple
+	import sys
+
 
 	maple.init_gpio()
-	maple.toggle_led()
-
+	x = 0
+	while (1):
+		if (sys.time() > x + 1000):
+			maple.toggle_led()
+			x = sys.time()
 
