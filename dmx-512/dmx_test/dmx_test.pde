@@ -1,11 +1,11 @@
 /*
- * DMX Test Program
+ * DMX Test Program (sine squared throb)
  *
  * by Brian Tovar
- * created  26 Aug 2011
- * modified 14 Sep 2011
+ * created  26 Jul 2011
+ * modified 25 Sep 2011
  *
- * NB: Be sure to use a 120 Ohm terminating resistor to prevent reflections
+ * NB: Be sure to use a 120-Ohm terminating resistor to prevent reflections
  */
 
 #include "dmx.h"

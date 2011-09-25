@@ -4,7 +4,8 @@ LeafLabs DMX-Maple Project
   with help from Rurik Primiani and Blake Rego
   for LeafLabs Maple (tested on Maple Mini)
   created  26 Jul 2011
-  modified 21 Sep 2011
+  modified 25 Sep 2011
+
 
 DMX-512 Project Summary:
 
@@ -14,10 +15,8 @@ configured as outputs, to drive channel data at 250kBaud. An auxiliary chip
 is required to provide the differential signal (RS-485 physical layer) 
 required by such devices. 
 
+
 Future Work:
 
 --A shield is currently in the design phase: schematics and layouts should be 
 posted at some point in the near future.
-
---Work needs to be done to manipulate the functional code into an importable 
-header and C file in a generic form. 

@@ -25,11 +25,11 @@
  *****************************************************************************/
 
 /*
- * DMX Class for LeafLabs Maple 
+ * DMX Test Program
  *
  * by Brian Tovar
- * created  26 Aug 2011
- * modified 21 Sep 2011
+ * created  26 Jul 2011
+ * modified 25 Sep 2011
  */
 
 #include "dmx.h"
