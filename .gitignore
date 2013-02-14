@@ -1,3 +1,9 @@
 build/
+*.o
+*.a
+*.pyc
 *~
-
+*.swp
+.*
+*.tmp
+*.old
